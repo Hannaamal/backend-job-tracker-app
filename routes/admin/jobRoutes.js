@@ -7,7 +7,7 @@ import {
   getJobsByCompany,
   updateJob,
   deleteJob,
-} from "../../controllers/admin/jobController.js";
+} from "../../controllers/jobController.js";
 
 const jobRouter = express.Router();
 

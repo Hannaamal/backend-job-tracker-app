@@ -1,5 +1,5 @@
 import express from 'express'
-import { createCompany, getCompanies,deleteCompany } from "../../controllers/admin/companyController.js";
+import { createCompany, getCompanies,deleteCompany } from "../../controllers/companyController.js";
 import userAuthCheck from '../../middleware/authCheck.js';
 
 const companyRouter = express.Router();

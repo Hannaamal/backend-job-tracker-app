@@ -1,5 +1,5 @@
-import Job from "../../models/jobs.js";
-import Company from "../../models/company.js";
+import Job from "../models/jobs.js";
+import Company from "../models/company.js";
 
 // CREATE JOB (Admin only)
 

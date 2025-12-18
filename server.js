@@ -7,6 +7,7 @@ import profileRouter from "./routes/profileRoutes.js"
 import skillRouter from "./routes/skillRoutes.js"
 import companyRouter from "./routes/admin/companyRoutes.js"
 import jobRouter from "./routes/admin/jobRoutes.js"
+import applyRouter from "./routes/jobApplicationRoutes.js"
 
 dotenv.config();
 const app = express();
@@ -14,6 +15,10 @@ const app = express();
 // Middleware
 app.use(express.json());
 app.use(cors());
+
+//file upload
+
+app.use("/uploads", express.static("uploads"));
 
 // MongoDB Connection
 mongoose
@@ -27,6 +32,8 @@ app.use('/api/profile',profileRouter)
 app.use('/api/skills',skillRouter)
 app.use('/api/company',companyRouter)
 app.use('/api/job',jobRouter)
+app.use('/api/application',applyRouter)
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () =>
