@@ -6,6 +6,7 @@ import authRouter from "./routes/authRoutes.js"
 import profileRouter from "./routes/profileRoutes.js"
 import skillRouter from "./routes/skillRoutes.js"
 import companyRouter from "./routes/admin/companyRoutes.js"
+import jobRouter from "./routes/admin/jobRoutes.js"
 
 dotenv.config();
 const app = express();
@@ -25,6 +26,7 @@ app.use('/api/auth',authRouter)
 app.use('/api/profile',profileRouter)
 app.use('/api/skills',skillRouter)
 app.use('/api/company',companyRouter)
+app.use('/api/job',jobRouter)
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () =>

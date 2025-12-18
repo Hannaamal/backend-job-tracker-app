@@ -1,5 +1,5 @@
 import express from "express";
-import userAuthCheck from "../middleware/userAuthCheck.js";
+import userAuthCheck from "../../middleware/authCheck.js";
 import {
   createJob,
   getAllJobs,
@@ -7,7 +7,7 @@ import {
   getJobsByCompany,
   updateJob,
   deleteJob,
-} from "../controllers/jobController.js";
+} from "../../controllers/admin/jobController.js";
 
 const jobRouter = express.Router();
 
@@ -19,6 +19,6 @@ const jobRouter = express.Router();
 // Admin only
  jobRouter.post("/", userAuthCheck, createJob);
  jobRouter.put("/:id", userAuthCheck, updateJob);
- jobRouter.delete("/:id", userAuthCheck, deleteJob);
+ jobRouter.put("/delete/:id", userAuthCheck, deleteJob);
 
 export default  jobRouter;

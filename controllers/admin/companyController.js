@@ -1,4 +1,4 @@
-import Company from "../../models/admin/company.js"
+import Company from "../../models/company.js"
 
 
 //CREATE NEW COMPANY

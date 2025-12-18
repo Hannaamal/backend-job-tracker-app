@@ -1,5 +1,5 @@
-import Job from "../models/job.js";
-import Company from "../models/company.js";
+import Job from "../../models/jobs.js";
+import Company from "../../models/company.js";
 
 // CREATE JOB (Admin only)
 
@@ -124,22 +124,32 @@ export const updateJob = async (req, res, next) => {
 /**
  * DELETE (DISABLE) JOB (Admin only)
  */
-export const deleteJob = async (req, res, next) => {
+export const deleteJob = async (req, res) => {
   try {
-    const job = await Job.findByIdAndUpdate(
-      req.params.id,
-      { isActive: false },
-      { new: true }
-    );
+    // 🔐 Admin check
+    if (req.userData.userRole !== "admin") {
+      return res.status(403).json({
+        message: "Forbidden: Only admin can delete jobs",
+      });
+    }
 
-    if (!job) {
+    const job = await Job.findById(req.params.id);
+
+    if (!job || job.isActive === false) {
       return res.status(404).json({ message: "Job not found" });
     }
 
+    // 🔥 Soft delete
+    job.isActive = false;
+    await job.save();
+
     res.status(200).json({
-      message: "Job disabled successfully",
+      message: "Job disactivted successfully (soft delete)",
     });
   } catch (error) {
-    next(error);
+    res.status(500).json({
+      message: "Failed to delete job",
+      error: error.message,
+    });
   }
 };
