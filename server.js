@@ -10,6 +10,7 @@ import jobRouter from "./routes/admin/jobRoutes.js"
 import applyRouter from "./routes/jobApplicationRoutes.js"
 import subscribeRouter from "./routes/companySubscriptionRoutes.js"
 import adminCompanySubscriptionRouter from "./routes/admin/companySubscriptionRoutes.js"
+import notificationRouter from "./routes/notificationRoutes.js"
 
 dotenv.config();
 const app = express();
@@ -38,6 +39,7 @@ app.use('/api/application',applyRouter)
 app.use('/api/company-subscriptions',subscribeRouter)
 
 app.use("/api/admin/company-subscriptions",adminCompanySubscriptionRouter);
+app.use('/api/notifications', notificationRouter);
 
 
 const PORT = process.env.PORT || 5000;

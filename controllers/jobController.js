@@ -3,12 +3,16 @@ import Company from "../models/company.js";
 import CompanySubscription from "../models/companySubscription.js";
 import Profile from "../models/profile.js";
 import { sendJobAlertEmail } from "../helpers/mailer.js";
+import Notification from '../models/notification.js';
+
+
+
+//JOB CREATION
 
 export const createJob = async (req, res, next) => {
   try {
-    // 🔐 Admin check
-    if (req.userData.userRole !== "admin") {
-      return res.status(403).json({ message: "Only admin can create jobs" });
+    if (req.userData.userRole !== 'admin') {
+      return res.status(403).json({ message: 'Only admin can create jobs' });
     }
 
     const {
@@ -23,27 +27,16 @@ export const createJob = async (req, res, next) => {
       expiresAt,
     } = req.body;
 
-    // ✅ Validate company
     const companyDoc = await Company.findById(company);
-    if (!companyDoc) {
-      return res.status(404).json({ message: "Company not found" });
-    }
+    if (!companyDoc) return res.status(404).json({ message: 'Company not found' });
 
-    // 🔍 Check for duplicate active job
-    const existingJob = await Job.findOne({
-      title,
-      company,
-      location,
-      isActive: true, // only active jobs
-    });
-
+    // Check for duplicate active job
+    const existingJob = await Job.findOne({ title, company, location, isActive: true });
     if (existingJob) {
-      return res.status(409).json({
-        message: "An active job with the same title, company, and location already exists",
-      });
+      return res.status(409).json({ message: 'Active job already exists' });
     }
 
-    // ✅ Create new job
+    // Create the job
     const job = await Job.create({
       title,
       description,
@@ -57,18 +50,16 @@ export const createJob = async (req, res, next) => {
       postedBy: req.userData.userId,
     });
 
-    // ✅ Notify subscribers
-    const subscriptions = await CompanySubscription.find({
-      company,
-      is_active: true,
-    }).populate("user", "name email");
+    // 1️⃣ Send emails to subscribers whose skills match
+    const subscriptions = await CompanySubscription.find({ company, is_active: true })
+      .populate('user', 'name email');
 
     for (const sub of subscriptions) {
       const profile = await Profile.findOne({ user: sub.user._id });
       if (!profile || !profile.skills?.length) continue;
 
-      const isMatched = profile.skills.some((profileSkill) =>
-        job.requiredSkills.some((jobSkill) => jobSkill.equals(profileSkill))
+      const isMatched = profile.skills.some(profileSkill =>
+        job.requiredSkills.some(jobSkill => jobSkill.equals(profileSkill))
       );
       if (!isMatched) continue;
 
@@ -77,19 +68,42 @@ export const createJob = async (req, res, next) => {
         jobTitle: job.title,
         company: companyDoc.name,
         location: job.location,
-        experience: job.experienceLevel,
+        experience: job.experienceLevel || 'Not specified',
         jobLink: `${process.env.FRONTEND_URL}/jobs/${job._id}`,
       });
     }
 
+    // 2️⃣ Create in-app notifications for all users whose skills match
+    const profiles = await Profile.find({ skills: { $exists: true, $not: { $size: 0 } } })
+      .populate('user', 'name');
+
+    for (const profile of profiles) {
+      const isMatched = profile.skills.some(profileSkill =>
+        job.requiredSkills.some(jobSkill => jobSkill.equals(profileSkill))
+      );
+      if (!isMatched) continue;
+
+      await Notification.create({
+        user: profile.user._id,
+        job: job._id,
+        title: `New job matching your skills: ${job.title}`,
+        message: `${companyDoc.name} posted a new job that matches your skills.`,
+      });
+    }
+
     res.status(201).json({
-      message: "Job created & matching users notified",
+      message: 'Job created, emails sent to subscribers & notifications sent to matching users',
       job,
     });
+
   } catch (error) {
     next(error);
   }
 };
+
+
+
+
 
 
 // GET ALL JOBS (Public)
