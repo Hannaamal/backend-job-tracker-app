@@ -1,10 +1,16 @@
 import Job from "../models/jobs.js";
 import Company from "../models/company.js";
-
-// CREATE JOB (Admin only)
+import CompanySubscription from "../models/companySubscription.js";
+import Profile from "../models/profile.js";
+import { sendJobAlertEmail } from "../helpers/mailer.js";
 
 export const createJob = async (req, res, next) => {
   try {
+    // 🔐 Admin check
+    if (req.userData.userRole !== "admin") {
+      return res.status(403).json({ message: "Only admin can create jobs" });
+    }
+
     const {
       title,
       description,
@@ -17,12 +23,27 @@ export const createJob = async (req, res, next) => {
       expiresAt,
     } = req.body;
 
-    // Validate company
-    const companyExists = await Company.findById(company);
-    if (!companyExists) {
+    // ✅ Validate company
+    const companyDoc = await Company.findById(company);
+    if (!companyDoc) {
       return res.status(404).json({ message: "Company not found" });
     }
 
+    // 🔍 Check for duplicate active job
+    const existingJob = await Job.findOne({
+      title,
+      company,
+      location,
+      isActive: true, // only active jobs
+    });
+
+    if (existingJob) {
+      return res.status(409).json({
+        message: "An active job with the same title, company, and location already exists",
+      });
+    }
+
+    // ✅ Create new job
     const job = await Job.create({
       title,
       description,
@@ -36,14 +57,40 @@ export const createJob = async (req, res, next) => {
       postedBy: req.userData.userId,
     });
 
+    // ✅ Notify subscribers
+    const subscriptions = await CompanySubscription.find({
+      company,
+      is_active: true,
+    }).populate("user", "name email");
+
+    for (const sub of subscriptions) {
+      const profile = await Profile.findOne({ user: sub.user._id });
+      if (!profile || !profile.skills?.length) continue;
+
+      const isMatched = profile.skills.some((profileSkill) =>
+        job.requiredSkills.some((jobSkill) => jobSkill.equals(profileSkill))
+      );
+      if (!isMatched) continue;
+
+      await sendJobAlertEmail(sub.user.email, {
+        name: sub.user.name,
+        jobTitle: job.title,
+        company: companyDoc.name,
+        location: job.location,
+        experience: job.experienceLevel,
+        jobLink: `${process.env.FRONTEND_URL}/jobs/${job._id}`,
+      });
+    }
+
     res.status(201).json({
-      message: "Job created successfully",
+      message: "Job created & matching users notified",
       job,
     });
   } catch (error) {
     next(error);
   }
 };
+
 
 // GET ALL JOBS (Public)
 
