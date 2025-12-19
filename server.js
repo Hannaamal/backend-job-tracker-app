@@ -8,6 +8,8 @@ import skillRouter from "./routes/skillRoutes.js"
 import companyRouter from "./routes/admin/companyRoutes.js"
 import jobRouter from "./routes/admin/jobRoutes.js"
 import applyRouter from "./routes/jobApplicationRoutes.js"
+import subscribeRouter from "./routes/companySubscriptionRoutes.js"
+import adminCompanySubscriptionRouter from "./routes/admin/companySubscriptionRoutes.js"
 
 dotenv.config();
 const app = express();
@@ -33,6 +35,9 @@ app.use('/api/skills',skillRouter)
 app.use('/api/company',companyRouter)
 app.use('/api/job',jobRouter)
 app.use('/api/application',applyRouter)
+app.use('/api/company-subscriptions',subscribeRouter)
+
+app.use("/api/admin/company-subscriptions",adminCompanySubscriptionRouter);
 
 
 const PORT = process.env.PORT || 5000;

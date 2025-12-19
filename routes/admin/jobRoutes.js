@@ -8,13 +8,15 @@ import {
   updateJob,
   deleteJob,
 } from "../../controllers/jobController.js";
+import { getJobs } from "../../controllers/filterController.js";
 
 const jobRouter = express.Router();
 
 // Public
  jobRouter.get("/", getAllJobs);
- jobRouter.get("/:id", getJobById);
+ jobRouter.get("/filter",getJobs)
  jobRouter.get("/company/:companyId", getJobsByCompany);
+ jobRouter.get("/:id", getJobById);
 
 // Admin only
  jobRouter.post("/", userAuthCheck, createJob);

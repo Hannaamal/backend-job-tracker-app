@@ -11,6 +11,10 @@ const jobSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    isRemote: {
+      type: Boolean,
+      default: false,
+    },
 
     location: {
       type: String,

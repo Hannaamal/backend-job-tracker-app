@@ -7,7 +7,7 @@ import {
 import {
   getApplicationsForJob,
   updateApplicationStatus,
-} from "../controllers/adminJobApplication.js";
+} from "../controllers/adminJApplicationController.js";
 import uploadResume from "../middleware/fileUpload.js";
 
 const applyRouter = express.Router();
