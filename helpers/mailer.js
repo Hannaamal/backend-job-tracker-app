@@ -6,8 +6,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const fromEmail = 'info@limenzydev.com';
-console.log( process.env.MAIL_HOST,process.env.MAIL_PORT,)
-console.log(process.env.MAILTRAP_USERNAME,process.env.MAILTRAP_PASSWORD)
+
 
 // Create transporter
 const transport = nodemailer.createTransport({
@@ -41,8 +40,8 @@ export const sendJobAlertEmail = async (to, context) => {
       context,
       headers: { 'X-MT-Category': 'Job-Alert' },
     });
-    console.log(`✅ Email sent to ${to} | MessageId: ${info.messageId}`);
+    // console.log(`✅ Email sent to ${to} | MessageId: ${info.messageId}`);
   } catch (err) {
-    console.error(`❌ Failed to send email to ${to}:`, err);
+    // console.error(`❌ Failed to send email to ${to}:`, err);
   }
 };

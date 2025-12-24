@@ -6,34 +6,29 @@ const userAuthCheck = async (req, res, next) => {
   if (req.method === "OPTIONS") return next();
 
   try {
-    const authHeader = req.headers.authorization;
+    // ✅ 1. Get token from cookie FIRST
+    let token = req.cookies?.auth_token;
 
-    //  Check header
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return next(new HttpError("Unauthorized", 401));
+    // ✅ 2. Fallback to Authorization header
+    if (!token && req.headers.authorization?.startsWith("Bearer ")) {
+      token = req.headers.authorization.split(" ")[1];
     }
 
-    //  Extract token
-    const token = authHeader.split(" ")[1];
     if (!token) {
       return next(new HttpError("Unauthorized", 401));
     }
 
-    //  Verify token
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
 
-    //  Find user
     const user = await User.findById(decodedToken.id);
     if (!user) {
       return next(new HttpError("User not found", 401));
     }
 
-    //  Attach user data
-    
-     req.userData = {
-      userId: decodedToken.id,  // match what you signed
+    req.userData = {
+      userId: decodedToken.id,
       userRole: decodedToken.role,
-      userEmail: user.email,    // can fetch from DB
+      userEmail: user.email,
     };
 
     next();

@@ -110,14 +110,106 @@ export const createJob = async (req, res, next) => {
 
 export const getAllJobs = async (req, res, next) => {
   try {
-    const jobs = await Job.find({ isActive: true })
+    const {
+      category,     // Skill.category
+      jobTitle,     // Job.title
+      location,
+      company,
+      jobType,
+      experience,
+      remote,
+      page = 1,
+      limit = 10,
+    } = req.query;
+
+    const query = { isActive: true };
+
+    /* =========================
+       🔹 CATEGORY SEARCH
+    ========================== */
+    if (category) {
+      query.category = category;
+    }
+
+    /* =========================
+       🔹 JOB TITLE SEARCH
+    ========================== */
+    if (jobTitle) {
+      query.title = { $regex: jobTitle, $options: "i" };
+    }
+
+    /* =========================
+       📍 LOCATION
+    ========================== */
+    if (location) {
+      query.location = { $regex: location, $options: "i" };
+    }
+
+    /* =========================
+       🏢 COMPANY
+    ========================== */
+    if (company) {
+      const companyDoc = await Company.findOne({
+        name: { $regex: company, $options: "i" },
+      });
+
+      if (!companyDoc) {
+        return res.status(200).json({
+          jobs: [],
+          total: 0,
+          page: Number(page),
+        });
+      }
+
+      query.company = companyDoc._id;
+    }
+
+    /* =========================
+       🕒 JOB TYPE
+    ========================== */
+    if (jobType) {
+      query.jobType = jobType;
+    }
+
+    /* =========================
+       📈 EXPERIENCE
+    ========================== */
+    if (experience) {
+      query.experienceLevel = experience;
+    }
+
+    /* =========================
+       🌍 REMOTE
+    ========================== */
+    if (remote !== undefined) {
+      query.isRemote = remote === "true";
+    }
+
+    /* =========================
+       📄 PAGINATION
+    ========================== */
+    const skip = (page - 1) * limit;
+
+    const jobs = await Job.find(query) // ✅ uses filters
       .populate("company", "name logo location")
       .populate("requiredSkills", "name")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(Number(limit));
 
-    res.status(200).json(jobs);
-  } catch (error) {
-    next(error);
+    const total = await Job.countDocuments(query);
+
+    res.status(200).json({
+      total,
+      page: Number(page),
+      pages: Math.ceil(total / limit),
+      jobs,
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: "Failed to fetch jobs",
+      error: err.message,
+    });
   }
 };
 

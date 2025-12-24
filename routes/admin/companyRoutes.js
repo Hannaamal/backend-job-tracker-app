@@ -1,11 +1,16 @@
 import express from 'express'
-import { createCompany, getCompanies,deleteCompany } from "../../controllers/companyController.js";
+import { createCompany, getCompanies,getCompanyById,deleteCompany, updateCompany } from "../../controllers/companyController.js";
 import userAuthCheck from '../../middleware/authCheck.js';
+import uploadLogo from '../../middleware/fileUpload/logoUpload.js';
 
 const companyRouter = express.Router();
 
-companyRouter.post("/add", userAuthCheck,createCompany);
-companyRouter.get("/view", getCompanies);
+companyRouter.get("/view",getCompanies);
+companyRouter.get("/:id",getCompanyById);
+companyRouter.post("/add", userAuthCheck,uploadLogo.single("logo"),createCompany);
+companyRouter.put("/update/:id",userAuthCheck,uploadLogo.single("logo"), updateCompany)
 companyRouter.put("/delete/:id",userAuthCheck,deleteCompany)
+
+
 
 export default companyRouter;

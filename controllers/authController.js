@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import Profile from "../models/profile.js";
 
 /*REGISTER*/
-export const register = async (req, res,next) => {
+export const register = async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
 
@@ -28,10 +28,9 @@ export const register = async (req, res,next) => {
       password: hashedPassword,
       role,
     });
-     await Profile.create({
+    await Profile.create({
       user: user._id,
     });
-
 
     // Generate token
     const token = jwt.sign(
@@ -39,6 +38,18 @@ export const register = async (req, res,next) => {
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_TOKEN_EXPIRY }
     );
+    res.cookie("auth_token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax", // "none" if frontend & backend are on different domains (HTTPS)
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+    res.cookie("user_role", user.role, {
+      httpOnly: false, // must be false to read in frontend
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
 
     res.status(201).json({
       message: "User registered successfully",
@@ -51,13 +62,15 @@ export const register = async (req, res,next) => {
       token,
     });
   } catch (error) {
-    res.status(500).json({ message: "Registration failed", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Registration failed", error: error.message });
   }
   // next()
 };
 
 /*LOGIN*/
-export const login = async (req, res,next) => {
+export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
@@ -79,6 +92,18 @@ export const login = async (req, res,next) => {
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_TOKEN_EXPIRY }
     );
+    res.cookie("auth_token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax", // "none" if frontend & backend are on different domains (HTTPS)
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+    res.cookie("user_role", user.role, {
+      httpOnly: false, // must be false to read in frontend
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
 
     res.status(200).json({
       message: "Login successful",
@@ -94,4 +119,31 @@ export const login = async (req, res,next) => {
     res.status(500).json({ message: "Login failed", error: error.message });
   }
   // next()
+};
+
+/* ======================
+   GET CURRENT USER
+====================== */
+export const me = async (req, res) => {
+  res.status(200).json({
+    user: {
+      id: req.user.id,
+      name: req.user.name,
+      email: req.user.email,
+      role: req.user.role,
+    },
+  });
+};
+
+/* ======================
+   LOGOUT
+====================== */
+export const logout = (req, res) => {
+  res.clearCookie("auth_token", {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+  });
+
+  res.status(200).json({ message: "Logged out successfully" });
 };

@@ -3,6 +3,7 @@ import Company from "../models/company.js";
 
 
 
+
 //subscribe company
 
 export const subscribeCompany = async (req, res) => {

@@ -1,5 +1,6 @@
 import Job from "../models/jobs.js";
 import Company from "../models/company.js";
+import skill from "../models/skills.js"
 
 export const getJobs = async (req, res) => {
   try {
@@ -25,7 +26,7 @@ export const getJobs = async (req, res) => {
     if (location) {
       query.location = { $regex: location, $options: "i" };
     }
-
+    
     // 🏢 Company filter (by name)
     if (company) {
       const companyDoc = await Company.findOne({
