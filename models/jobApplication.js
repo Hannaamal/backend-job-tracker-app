@@ -20,8 +20,13 @@ const jobApplicationSchema = new mongoose.Schema(
       required: true,
     },
 
+
     resume: {
       type: String, // URL or file path
+    },
+
+    experience:{
+        type:String,
     },
 
     status: {

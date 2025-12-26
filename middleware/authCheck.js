@@ -25,6 +25,8 @@ const userAuthCheck = async (req, res, next) => {
       return next(new HttpError("User not found", 401));
     }
 
+
+    req.user = user;
     req.userData = {
       userId: decodedToken.id,
       userRole: decodedToken.role,

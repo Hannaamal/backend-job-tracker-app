@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import Company from "../models/company.js";
 import Job from "../models/jobs.js";
+import companySubscription from "../models/companySubscription.js";
 
 
 //CREATE NEW COMPANY
@@ -89,7 +90,7 @@ export const getCompanyById = async (req, res) => {
     let isSubscribed = false;
 
     if (req.userData) {
-      const sub = await CompanySubscription.findOne({
+      const sub = await companySubscription.findOne({
         user: req.userData.userId,
         company: companyId,
         is_active: true,

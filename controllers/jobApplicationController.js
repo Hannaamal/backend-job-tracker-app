@@ -1,10 +1,35 @@
 import JobApplication from "../models/jobApplication.js";
 import Job from "../models/jobs.js";
 
+
+export const checkJobApplied = async (req, res) => {
+  try {
+    const userId = req.userData.userId;
+    const { jobId } = req.params;
+
+    const alreadyApplied = await JobApplication.exists({
+      job: jobId,
+      applicant: userId,
+      is_deleted: false,
+    });
+
+    return res.status(200).json({
+      applied: !!alreadyApplied,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Failed to check application status",
+      error: error.message,
+    });
+  }
+};
+
+
 export const applyForJob = async (req, res) => {
   try {
     const userId = req.userData.userId;
     const jobId = req.params.jobId;
+    const { experience } = req.body; //  get experience
 
     const job = await Job.findById(jobId);
     if (!job || job.is_deleted) {
@@ -15,7 +40,6 @@ export const applyForJob = async (req, res) => {
       job: jobId,
       applicant: userId,
     });
-   
 
     if (alreadyApplied) {
       return res.status(400).json({ message: "Already applied for this job" });
@@ -26,9 +50,8 @@ export const applyForJob = async (req, res) => {
       applicant: userId,
       company: job.company,
       resume: req.file ? req.file.path : null,
+       experience, // ✅ SAVE EXPERIENCE
     });
-     console.log("FILE:", req.file);
-    console.log("BODY:", req.body);
 
     res.status(201).json({
       message: "Job applied successfully",
