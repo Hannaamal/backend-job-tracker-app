@@ -15,7 +15,11 @@ export const createCompany = async (req, res) => {
         .json({ message: "Forbidden: Only admin can create companies" });
     }
 
-    const { name, location } = req.body;
+    const { name, email, location, website } = req.body;
+    if (!name || !email || !location) {
+    return res.status(400).json({ message: "Missing required fields" });
+}
+
 
     // 🔍 Check if company already exists (not deleted)
     const existingCompany = await Company.findOne({
@@ -124,7 +128,8 @@ export const updateCompany = async (req, res) => {
     }
 
     const companyId = req.params.id;
-    const { name, description, location } = req.body;
+    const { name, description, location, email, website } = req.body;
+
 
     const company = await Company.findOne({
       _id: companyId,
@@ -141,6 +146,8 @@ export const updateCompany = async (req, res) => {
         _id: { $ne: companyId },
         name: name.trim(),
         location: location.trim(),
+        website,
+        email,
         is_deleted: false,
       });
 
@@ -155,6 +162,8 @@ export const updateCompany = async (req, res) => {
     if (name) company.name = name.trim();
     if (description !== undefined) company.description = description;
     if (location) company.location = location.trim();
+    if(email)company.email=email.trim();
+    if(website)company.website=website;
 
      if (req.file) {
       company.logo = `/uploads/logos/${req.file.filename}`;

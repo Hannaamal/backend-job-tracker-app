@@ -8,7 +8,7 @@ import {
 import {
   getApplicationsForJob,
   updateApplicationStatus,
-} from "../controllers/adminJApplicationController.js";
+} from "../controllers/adminJobApplicationController.js";
 import uploadResume from "../middleware/fileUpload/resumeUpload.js";
 
 const applyRouter = express.Router();

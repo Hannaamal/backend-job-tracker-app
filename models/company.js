@@ -9,6 +9,13 @@ const companySchema = new mongoose.Schema(
     description:{
          type:String
         },
+    website:{
+      type:String
+    },
+    email:{
+      type:String,
+      required:true
+    },
     logo: {
         type: String, 
         default: "/uploads/logos/default-logo.png", 
