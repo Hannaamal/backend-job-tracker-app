@@ -12,9 +12,11 @@ import subscribeRouter from "./routes/companySubscriptionRoutes.js"
 import adminCompanySubscriptionRouter from "./routes/admin/companySubscriptionRoutes.js"
 import notificationRouter from "./routes/notificationRoutes.js"
 import cookieParser from "cookie-parser";
+import adminUserRoutes from "./routes/admin/adminUserRoutes.js";
 
 dotenv.config();
 const app = express();
+app.disable("etag");
 
 // cookies
 app.use(cookieParser());
@@ -51,6 +53,9 @@ app.use('/api/company-subscriptions',subscribeRouter)
 
 app.use("/api/admin/company-subscriptions",adminCompanySubscriptionRouter);
 app.use('/api/notifications', notificationRouter);
+
+app.use("/api/admin/users", adminUserRoutes);
+
 
 
 const PORT = process.env.PORT || 5000;

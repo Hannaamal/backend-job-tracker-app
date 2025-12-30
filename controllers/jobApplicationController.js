@@ -7,6 +7,7 @@ export const checkJobApplied = async (req, res) => {
   try {
     const userId = req.userData.userId;
     const { jobId } = req.params;
+  
 
     const alreadyApplied = await JobApplication.exists({
       job: jobId,
@@ -45,6 +46,8 @@ export const applyForJob = async (req, res) => {
     if (alreadyApplied) {
       return res.status(400).json({ message: "Already applied for this job" });
     }
+
+    
 
     const application = await JobApplication.create({
       job: jobId,
@@ -86,6 +89,41 @@ export const getMyApplications = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch applications" });
   }
 };
+
+
+
+/*
+ WITHDRAW APPLICATION
+ */
+
+
+export const withdrawApplication = async (req, res, next) => {
+  try {
+    const applicantId = req.userData.userId; // from auth middleware
+    const jobId = req.params.jobId;
+
+    // Find the application
+    const application = await JobApplication.findOne({
+      job: jobId,
+      applicant: applicantId,
+      is_deleted: false, // only active applications
+    });
+
+    if (!application) {
+      return res.status(404).json({ message: "Application not found" });
+    }
+
+    // Soft delete by setting is_deleted to true
+    application.is_deleted = true;
+    await application.save();
+
+    res.status(200).json({ message: "Application withdrawn successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
 
 
 

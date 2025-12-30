@@ -4,11 +4,12 @@ import {
   applyForJob,
   getMyApplications,
    checkJobApplied,
+   withdrawApplication,
 } from "../controllers/jobApplicationController.js";
 import {
   getApplicationsForJob,
   updateApplicationStatus,
-} from "../controllers/adminJobApplicationController.js";
+} from "../controllers/admin/adminJobApplicationController.js";
 import uploadResume from "../middleware/fileUpload/resumeUpload.js";
 
 const applyRouter = express.Router();
@@ -17,6 +18,7 @@ const applyRouter = express.Router();
 applyRouter.get("/check/:jobId",userAuthCheck,checkJobApplied);
 applyRouter.post( "/apply/:jobId",userAuthCheck,uploadResume.single("resume"),applyForJob);
 applyRouter.get("/my-applications", userAuthCheck, getMyApplications);
+applyRouter.put("/withdraw/:jobId",userAuthCheck,withdrawApplication);
 
 // Admin
 applyRouter.get("/job/:jobId", userAuthCheck, getApplicationsForJob);

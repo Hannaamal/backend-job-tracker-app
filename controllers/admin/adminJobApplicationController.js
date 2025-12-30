@@ -1,4 +1,4 @@
-import JobApplication from "../models/jobApplication.js";
+import JobApplication from "../../models/jobApplication.js";
 
 
 export const getApplicationsForJob = async (req, res) => {
