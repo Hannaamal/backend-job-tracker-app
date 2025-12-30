@@ -13,6 +13,7 @@ import adminCompanySubscriptionRouter from "./routes/admin/companySubscriptionRo
 import notificationRouter from "./routes/notificationRoutes.js"
 import cookieParser from "cookie-parser";
 import adminUserRoutes from "./routes/admin/adminUserRoutes.js";
+import saveRouter from "./routes/saveJobRoutes.js";
 
 dotenv.config();
 const app = express();
@@ -53,6 +54,7 @@ app.use('/api/company-subscriptions',subscribeRouter)
 
 app.use("/api/admin/company-subscriptions",adminCompanySubscriptionRouter);
 app.use('/api/notifications', notificationRouter);
+app.use("/api/savejob/",saveRouter)
 
 app.use("/api/admin/users", adminUserRoutes);
 
