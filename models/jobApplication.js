@@ -13,6 +13,10 @@ const jobApplicationSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    interview: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Interview",
+    },
 
     company: {
       type: mongoose.Schema.Types.ObjectId,
@@ -20,18 +24,17 @@ const jobApplicationSchema = new mongoose.Schema(
       required: true,
     },
 
-
     resume: {
       type: String, // URL or file path
     },
 
-    experience:{
-        type:String,
+    experience: {
+      type: String,
     },
 
     status: {
       type: String,
-      enum: ["applied", "shortlisted", "rejected", "hired"],
+      enum: ["applied", "shortlisted", "interview", "rejected", "hired"],
       default: "applied",
     },
 

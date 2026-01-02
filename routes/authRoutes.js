@@ -1,5 +1,5 @@
 import express from "express"
-import { register, login ,me} from "../controllers/authController.js";
+import { register, login ,me, logout} from "../controllers/authController.js";
 import { check } from "express-validator";
 import userAuthCheck from "../middleware/authCheck.js";
 
@@ -18,5 +18,7 @@ authRouter.post("/login",[
 ],  login);
 
 authRouter.get("/me", userAuthCheck,me)
+
+authRouter.post("/logout",logout)
 
 export default authRouter;

@@ -140,10 +140,19 @@ export const me = async (req, res) => {
 ====================== */
 export const logout = (req, res) => {
   res.clearCookie("auth_token", {
-    httpOnly: true,
-    sameSite: "lax",
+    httpOnly: false,
     secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/", // ✅ MUST MATCH
+  });
+
+  res.clearCookie("user_role", {
+    httpOnly: false,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/", // ✅ MUST MATCH
   });
 
   res.status(200).json({ message: "Logged out successfully" });
 };
+
