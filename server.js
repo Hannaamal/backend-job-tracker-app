@@ -16,6 +16,7 @@ import adminUserRoutes from "./routes/admin/adminUserRoutes.js";
 import saveRouter from "./routes/saveJobRoutes.js";
 import adminApplicationRouter from "./routes/admin/adminApplicationRoutes.js"
 import adminInterviewSchedulerRouter from "./routes/admin/interviewSchedulerRoutes.js"
+import dashboardRouter from "./routes/admin/dashboardRoutes.js"
 
 dotenv.config();
 const app = express();
@@ -61,6 +62,7 @@ app.use("/api/savejob/",saveRouter)
 app.use("/api/admin/users", adminUserRoutes);
 app.use("/api/admin/application",adminApplicationRouter)
 app.use("/api/admin/interview",adminInterviewSchedulerRouter)
+app.use("/api/admin/dash",dashboardRouter)
 
 
 

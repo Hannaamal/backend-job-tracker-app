@@ -3,16 +3,14 @@ import Company from "../models/company.js";
 import CompanySubscription from "../models/companySubscription.js";
 import Profile from "../models/profile.js";
 import { sendJobAlertEmail } from "../helpers/mailer.js";
-import Notification from '../models/notification.js';
-
-
+import Notification from "../models/notification.js";
 
 //JOB CREATION
 
 export const createJob = async (req, res, next) => {
   try {
-    if (req.userData.userRole !== 'admin') {
-      return res.status(403).json({ message: 'Only admin can create jobs' });
+    if (req.userData.userRole !== "admin") {
+      return res.status(403).json({ message: "Only admin can create jobs" });
     }
 
     const {
@@ -28,12 +26,18 @@ export const createJob = async (req, res, next) => {
     } = req.body;
 
     const companyDoc = await Company.findById(company);
-    if (!companyDoc) return res.status(404).json({ message: 'Company not found' });
+    if (!companyDoc)
+      return res.status(404).json({ message: "Company not found" });
 
     // Check for duplicate active job
-    const existingJob = await Job.findOne({ title, company, location, isActive: true });
+    const existingJob = await Job.findOne({
+      title,
+      company,
+      location,
+      isActive: true,
+    });
     if (existingJob) {
-      return res.status(409).json({ message: 'Active job already exists' });
+      return res.status(409).json({ message: "Active job already exists" });
     }
 
     // Create the job
@@ -51,15 +55,17 @@ export const createJob = async (req, res, next) => {
     });
 
     // 1️⃣ Send emails to subscribers whose skills match
-    const subscriptions = await CompanySubscription.find({ company, is_active: true })
-      .populate('user', 'name email');
+    const subscriptions = await CompanySubscription.find({
+      company,
+      is_active: true,
+    }).populate("user", "name email");
 
     for (const sub of subscriptions) {
       const profile = await Profile.findOne({ user: sub.user._id });
       if (!profile || !profile.skills?.length) continue;
 
-      const isMatched = profile.skills.some(profileSkill =>
-        job.requiredSkills.some(jobSkill => jobSkill.equals(profileSkill))
+      const isMatched = profile.skills.some((profileSkill) =>
+        job.requiredSkills.some((jobSkill) => jobSkill.equals(profileSkill))
       );
       if (!isMatched) continue;
 
@@ -68,18 +74,19 @@ export const createJob = async (req, res, next) => {
         jobTitle: job.title,
         company: companyDoc.name,
         location: job.location,
-        experience: job.experienceLevel || 'Not specified',
+        experience: job.experienceLevel || "Not specified",
         jobLink: `${process.env.FRONTEND_URL}/jobs/${job._id}`,
       });
     }
 
     // 2️⃣ Create in-app notifications for all users whose skills match
-    const profiles = await Profile.find({ skills: { $exists: true, $not: { $size: 0 } } })
-      .populate('user', 'name');
+    const profiles = await Profile.find({
+      skills: { $exists: true, $not: { $size: 0 } },
+    }).populate("user", "name");
 
     for (const profile of profiles) {
-      const isMatched = profile.skills.some(profileSkill =>
-        job.requiredSkills.some(jobSkill => jobSkill.equals(profileSkill))
+      const isMatched = profile.skills.some((profileSkill) =>
+        job.requiredSkills.some((jobSkill) => jobSkill.equals(profileSkill))
       );
       if (!isMatched) continue;
 
@@ -92,27 +99,22 @@ export const createJob = async (req, res, next) => {
     }
 
     res.status(201).json({
-      message: 'Job created, emails sent to subscribers & notifications sent to matching users',
+      message:
+        "Job created, emails sent to subscribers & notifications sent to matching users",
       job,
     });
-
   } catch (error) {
     next(error);
   }
 };
-
-
-
-
-
 
 // GET ALL JOBS (Public)
 
 export const getAllJobs = async (req, res, next) => {
   try {
     const {
-      category,     // Skill.category
-      jobTitle,     // Job.title
+      category, // Skill.category
+      jobTitle, // Job.title
       location,
       company,
       jobType,
@@ -145,23 +147,29 @@ export const getAllJobs = async (req, res, next) => {
       query.location = { $regex: location, $options: "i" };
     }
 
-    /* =========================
-       🏢 COMPANY
-    ========================== */
+    //company filter
+
     if (company) {
-      const companyDoc = await Company.findOne({
-        name: { $regex: company, $options: "i" },
-      });
-
-      if (!companyDoc) {
-        return res.status(200).json({
-          jobs: [],
-          total: 0,
-          page: Number(page),
-        });
+      // If admin sends company _id
+      if (company.match(/^[0-9a-fA-F]{24}$/)) {
+        query.company = company;
       }
+      // If public page sends company name
+      else {
+        const companyDoc = await Company.findOne({
+          name: { $regex: company, $options: "i" },
+        });
 
-      query.company = companyDoc._id;
+        if (!companyDoc) {
+          return res.status(200).json({
+            jobs: [],
+            total: 0,
+            page: Number(page),
+          });
+        }
+
+        query.company = companyDoc._id;
+      }
     }
 
     /* =========================
@@ -231,7 +239,7 @@ export const getJobById = async (req, res, next) => {
     next(error);
   }
 };
-
+ 
 /**
  * GET JOBS BY COMPANY
  */
@@ -260,6 +268,8 @@ export const updateJob = async (req, res, next) => {
       { $set: req.body },
       { new: true, runValidators: true }
     );
+    console.log("🔥 UPDATE CONTROLLER HIT");
+
 
     if (!job) {
       return res.status(404).json({ message: "Job not found" });
@@ -273,6 +283,7 @@ export const updateJob = async (req, res, next) => {
     next(error);
   }
 };
+ 
 
 /**
  * DELETE (DISABLE) JOB (Admin only)

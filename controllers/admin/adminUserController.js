@@ -11,12 +11,30 @@ export const getAllUsersAdmin = async (req, res) => {
       return res.status(403).json({ message: "Access denied" });
     }
 
+    // Pagination
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 5;
+    const skip = (page - 1) * limit;
+
+    // Fetch users
     const users = await User.find()
       .select("name email role createdAt")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
 
-    res.status(200).json(users);
+    // Total count
+    const totalUsers = await User.countDocuments();
+
+    // Send response once
+    res.status(200).json({
+      users,
+      totalUsers,
+      page,
+      totalPages: Math.ceil(totalUsers / limit),
+    });
   } catch (error) {
+    console.error("Error fetching admin users:", error);
     res.status(500).json({
       message: "Failed to fetch users",
       error: error.message,
