@@ -31,9 +31,28 @@ export const getMyProfile = async (req, res, next) => {
  * - Updates only profile fields
  * - Name/email/password NOT touched
  */
-export const updateMyProfile = async (req, res, next) => {
+export const updateMyProfile = async (req, res) => {
   try {
     const userId = req.userData.userId;
+
+    ["skills", "education", "experience"].forEach((field) => {
+      if (req.body[field]) {
+        req.body[field] = JSON.parse(req.body[field]);
+      }
+    });
+
+    if (req.files?.avatar) {
+      req.body.avatar = `/uploads/profiles/${req.files.avatar[0].filename}`;
+    }
+
+    if (req.files?.resume) {
+      req.body.resume = {
+        url: `/uploads/resumes/${req.files.resume[0].filename}`,
+        uploadedAt: new Date(),
+      };
+    }
+
+    delete req.body.user;
 
     const profile = await Profile.findOneAndUpdate(
       { user: userId },
@@ -41,15 +60,9 @@ export const updateMyProfile = async (req, res, next) => {
       { new: true, runValidators: true }
     );
 
-    if (!profile) {
-      return res.status(404).json({ message: "Profile not found" });
-    }
-
-    res.status(200).json({
-      message: "Profile updated successfully",
-      profile,
-    });
-  } catch (error) {
-    next(error);
+    res.status(200).json({ profile });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };
+

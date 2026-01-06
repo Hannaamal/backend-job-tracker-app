@@ -140,14 +140,14 @@ export const me = async (req, res) => {
 ====================== */
 export const logout = (req, res) => {
   res.clearCookie("auth_token", {
-    httpOnly: false,
+    httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/", // ✅ MUST MATCH
   });
 
   res.clearCookie("user_role", {
-    httpOnly: false,
+    httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/", // ✅ MUST MATCH

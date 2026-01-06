@@ -56,8 +56,20 @@ const profileSchema = new mongoose.Schema(
       remoteOnly: Boolean,
       preferredLocations: [String],
     },
+
+     // ====================== NEW FIELD ======================
+    avatar: {
+      type: String, // URL to the profile image
+    },
+
+    preferences: {
+      jobType: String,
+      remoteOnly: Boolean,
+      preferredLocations: [String],
+    },
   },
   { timestamps: true }
 );
+  
 
 export default mongoose.model("Profile", profileSchema);

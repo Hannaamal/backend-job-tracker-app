@@ -4,6 +4,7 @@ import CompanySubscription from "../models/companySubscription.js";
 import Profile from "../models/profile.js";
 import { sendJobAlertEmail } from "../helpers/mailer.js";
 import Notification from "../models/notification.js";
+import Skill from "../models/skills.js"
 
 //JOB CREATION
 
@@ -116,6 +117,7 @@ export const getAllJobs = async (req, res, next) => {
       category, // Skill.category
       jobTitle, // Job.title
       location,
+      keyword, // ✅ ADD THIS
       company,
       jobType,
       experience,
@@ -138,6 +140,26 @@ export const getAllJobs = async (req, res, next) => {
     ========================== */
     if (jobTitle) {
       query.title = { $regex: jobTitle, $options: "i" };
+    }
+
+    /* =========================
+   🔍 GLOBAL SEARCH (KEYWORD)
+   title OR skill OR category
+========================= */
+    if (keyword) {
+      const skills = await Skill.find({
+        $or: [
+          { name: { $regex: keyword, $options: "i" } },
+          { category: { $regex: keyword, $options: "i" } },
+        ],
+      }).select("_id");
+
+      const skillIds = skills.map((s) => s._id);
+
+      query.$or = [
+        { title: { $regex: keyword, $options: "i" } },
+        { requiredSkills: { $in: skillIds } },
+      ];
     }
 
     /* =========================
@@ -239,7 +261,7 @@ export const getJobById = async (req, res, next) => {
     next(error);
   }
 };
- 
+
 /**
  * GET JOBS BY COMPANY
  */
@@ -270,7 +292,6 @@ export const updateJob = async (req, res, next) => {
     );
     console.log("🔥 UPDATE CONTROLLER HIT");
 
-
     if (!job) {
       return res.status(404).json({ message: "Job not found" });
     }
@@ -283,7 +304,6 @@ export const updateJob = async (req, res, next) => {
     next(error);
   }
 };
- 
 
 /**
  * DELETE (DISABLE) JOB (Admin only)
