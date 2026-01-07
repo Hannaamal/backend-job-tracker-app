@@ -5,11 +5,20 @@ import Profile from "../models/profile.js";
 import { sendJobAlertEmail } from "../helpers/mailer.js";
 import Notification from "../models/notification.js";
 import Skill from "../models/skills.js"
+import { validationResult } from "express-validator";
+
 
 //JOB CREATION
 
 export const createJob = async (req, res, next) => {
   try {
+     const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        message: "Validation failed",
+        errors: errors.array(),
+      });
+    }
     if (req.userData.userRole !== "admin") {
       return res.status(403).json({ message: "Only admin can create jobs" });
     }
@@ -285,6 +294,13 @@ export const getJobsByCompany = async (req, res, next) => {
  */
 export const updateJob = async (req, res, next) => {
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        message: "Validation failed",
+        errors: errors.array(),
+      });
+    }
     const job = await Job.findByIdAndUpdate(
       req.params.id,
       { $set: req.body },

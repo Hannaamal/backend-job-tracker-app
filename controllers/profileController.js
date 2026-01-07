@@ -1,8 +1,9 @@
+import { validationResult } from "express-validator";
 import Profile from "../models/profile.js";
 import User from "../models/user.js";
 
 /**
- * GET MY PROFILE
+ * GET MY PROFILE 
  * - Profile ALWAYS exists
  * - Name & email come from User
  */
@@ -33,6 +34,13 @@ export const getMyProfile = async (req, res, next) => {
  */
 export const updateMyProfile = async (req, res) => {
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        message: "Validation failed",
+        errors: errors.array(),
+      });
+    }
     const userId = req.userData.userId;
 
     ["skills", "education", "experience"].forEach((field) => {

@@ -61,12 +61,6 @@ const profileSchema = new mongoose.Schema(
     avatar: {
       type: String, // URL to the profile image
     },
-
-    preferences: {
-      jobType: String,
-      remoteOnly: Boolean,
-      preferredLocations: [String],
-    },
   },
   { timestamps: true }
 );

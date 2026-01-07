@@ -1,6 +1,7 @@
 // controllers/skillController.js
 import Skill from "../models/skills.js";
 import HttpError from "../helpers/httpError.js";
+import { validationResult } from "express-validator";
 
 /* GET ALL SKILLS */
 export const getSkills = async (req, res, next) => {
@@ -28,6 +29,13 @@ export const getSkillById = async (req, res, next) => {
 /* CREATE NEW SKILL */
 export const createSkill = async (req, res, next) => {
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        message: "Validation failed",
+        errors: errors.array(),
+      });
+    }
     const { name, category } = req.body;
 
     // Check for duplicates
@@ -48,6 +56,13 @@ export const createSkill = async (req, res, next) => {
 /* UPDATE SKILL */
 export const updateSkill = async (req, res, next) => {
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        message: "Validation failed",
+        errors: errors.array(),
+      });
+    }
     const { name, category } = req.body;
 
     const skill = await Skill.findByIdAndUpdate(

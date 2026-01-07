@@ -2,12 +2,20 @@ import mongoose from "mongoose";
 import Company from "../models/company.js";
 import Job from "../models/jobs.js";
 import companySubscription from "../models/companySubscription.js";
+import { validationResult } from "express-validator";
 
 
 //CREATE NEW COMPANY
 
 export const createCompany = async (req, res) => {
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        message: "Validation failed",
+        errors: errors.array(),
+      });
+    }
     // Only admin can create a company
     if (req.userData.userRole !== "admin") {
       return res
@@ -120,6 +128,13 @@ export const getCompanyById = async (req, res) => {
 
 export const updateCompany = async (req, res) => {
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        message: "Validation failed",
+        errors: errors.array(),
+      });
+    }
     // Only admin can edit company
     if (req.userData.userRole !== "admin") {
       return res
