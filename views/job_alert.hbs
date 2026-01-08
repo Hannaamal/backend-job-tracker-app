@@ -1,22 +1,61 @@
-<h2>Hi {{name}}, 👋</h2>
-<p>A new job matching your skills has been posted:</p>
 
-<h3>{{jobTitle}}</h3>
-<p><strong>Company:</strong> {{company}}</p>
-<p><strong>Location:</strong> {{location}}</p>
-<p><strong>Experience:</strong> {{experience}}</p>
+<table width="100%" cellpadding="0" cellspacing="0" style="font-family:Arial, sans-serif; background:#f4f4f5; padding:20px;">
+  <tr>
+    <td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff; border-radius:8px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+        
+        <!-- Header -->
+        <tr>
+          <td style="background:#0073b1; color:#ffffff; padding:20px; text-align:center;">
+            <h2 style="margin:0; font-size:24px;">Hi {{name}}, 👋</h2>
+          </td>
+        </tr>
+        
+        <!-- Body -->
+        <tr>
+          <td style="padding:30px;">
+            <p style="font-size:16px; color:#333333; margin-bottom:20px;">
+              A new job matching your skills has just been posted!
+            </p>
 
-<a href="{{jobLink}}" style="
-  display:inline-block;
-  padding:10px 15px;
-  background:#007bff;
-  color:#fff;
-  text-decoration:none;
-  border-radius:5px;">
-  View Job
-</a>
+            <h3 style="font-size:20px; color:#0073b1; margin:10px 0;">{{jobTitle}}</h3>
+            <p style="margin:5px 0; font-size:16px; color:#555555;">
+              <strong>Company:</strong> {{company}}<br>
+              <strong>Location:</strong> {{location}}<br>
+              <strong>Experience:</strong> {{experience}}
+            </p>
 
-<p style="margin-top:20px;">
-  Good luck! 🚀<br/>
-  Job Portal Team
-</p>
+            <!-- Button -->
+            <div style="text-align:center; margin:30px 0;">
+              <a href="{{jobLink}}" style="
+                background:#0073b1;
+                color:#ffffff;
+                text-decoration:none;
+                padding:12px 25px;
+                font-size:16px;
+                border-radius:5px;
+                display:inline-block;
+                font-weight:bold;">
+                View Job
+              </a>
+            </div>
+
+            <p style="font-size:14px; color:#999999; text-align:center;">
+              Good luck! 🚀<br>
+              Job Portal Team
+            </p>
+          </td>
+        </tr>
+
+        <!-- Footer -->
+        <tr>
+          <td style="background:#f4f4f5; text-align:center; padding:15px; font-size:12px; color:#999999;">
+            You are receiving this email because you subscribed to job alerts.
+          </td>
+        </tr>
+
+      </table>
+    </td>
+  </tr>
+</table>
+

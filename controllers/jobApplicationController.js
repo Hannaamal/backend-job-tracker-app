@@ -81,6 +81,7 @@ export const getMyApplications = async (req, res) => {
     })
       .populate("job", "title location")
       .populate("company", "name logo location")
+      .populate("interview")
       .sort({ createdAt: -1 });
 
     res.status(200).json(applications);

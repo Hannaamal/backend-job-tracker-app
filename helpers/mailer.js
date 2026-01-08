@@ -33,15 +33,15 @@ export const sendJobAlertEmail = async (to, context) => {
     console.log(to,context)
   try {
     const info = await transport.sendMail({
-      from: `"Limenzy Team" <${fromEmail}>`,
+      from: `"JobPortal Team" <${fromEmail}>`,
       to,
       subject: '🎯 New Job Matching Your Skills',
       template: 'job_alert', // name of your .hbs file
       context,
       headers: { 'X-MT-Category': 'Job-Alert' },
     });
-    // console.log(`✅ Email sent to ${to} | MessageId: ${info.messageId}`);
+   
   } catch (err) {
-    // console.error(`❌ Failed to send email to ${to}:`, err);
+ 
   }
 };

@@ -79,13 +79,17 @@ export const createJob = async (req, res, next) => {
       );
       if (!isMatched) continue;
 
+
       await sendJobAlertEmail(sub.user.email, {
         name: sub.user.name,
         jobTitle: job.title,
         company: companyDoc.name,
         location: job.location,
         experience: job.experienceLevel || "Not specified",
-        jobLink: `${process.env.FRONTEND_URL}/jobs/${job._id}`,
+        jobLink: `${process.env.NEXT_PUBLIC_FRONTEND_URL}/job/${job._id}`
+
+        
+
       });
     }
 
@@ -120,19 +124,17 @@ export const createJob = async (req, res, next) => {
 
 // GET ALL JOBS (Public)
 
-export const getAllJobs = async (req, res, next) => {
+export const getAllJobs = async (req, res) => {
   try {
     const {
       category, // Skill.category
       jobTitle, // Job.title
       location,
-      keyword, // ✅ ADD THIS
+      keyword, // global search
       company,
       jobType,
       experience,
       remote,
-      page = 1,
-      limit = 10,
     } = req.query;
 
     const query = { isActive: true };
@@ -152,9 +154,9 @@ export const getAllJobs = async (req, res, next) => {
     }
 
     /* =========================
-   🔍 GLOBAL SEARCH (KEYWORD)
-   title OR skill OR category
-========================= */
+       🔍 GLOBAL SEARCH
+       title OR skill OR category
+    ========================== */
     if (keyword) {
       const skills = await Skill.find({
         $or: [
@@ -178,25 +180,22 @@ export const getAllJobs = async (req, res, next) => {
       query.location = { $regex: location, $options: "i" };
     }
 
-    //company filter
-
+    /* =========================
+       🏢 COMPANY FILTER
+    ========================== */
     if (company) {
-      // If admin sends company _id
+      // If ID
       if (company.match(/^[0-9a-fA-F]{24}$/)) {
         query.company = company;
-      }
-      // If public page sends company name
+      } 
+      // If name
       else {
         const companyDoc = await Company.findOne({
           name: { $regex: company, $options: "i" },
         });
 
         if (!companyDoc) {
-          return res.status(200).json({
-            jobs: [],
-            total: 0,
-            page: Number(page),
-          });
+          return res.status(200).json({ jobs: [] });
         }
 
         query.company = companyDoc._id;
@@ -224,26 +223,12 @@ export const getAllJobs = async (req, res, next) => {
       query.isRemote = remote === "true";
     }
 
-    /* =========================
-       📄 PAGINATION
-    ========================== */
-    const skip = (page - 1) * limit;
-
-    const jobs = await Job.find(query) // ✅ uses filters
+    const jobs = await Job.find(query)
       .populate("company", "name logo location")
       .populate("requiredSkills", "name")
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(Number(limit));
+      .sort({ createdAt: -1 });
 
-    const total = await Job.countDocuments(query);
-
-    res.status(200).json({
-      total,
-      page: Number(page),
-      pages: Math.ceil(total / limit),
-      jobs,
-    });
+    res.status(200).json({ jobs });
   } catch (err) {
     res.status(500).json({
       message: "Failed to fetch jobs",
@@ -251,6 +236,7 @@ export const getAllJobs = async (req, res, next) => {
     });
   }
 };
+
 
 /**
  * GET JOB BY ID

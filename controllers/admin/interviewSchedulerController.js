@@ -1,44 +1,103 @@
 import Interview from "../../models/interviewScheduler.js";
 import JobApplication from "../../models/jobApplication.js";
+import Job from "../../models/jobs.js";
+
 
 /**
- * Schedule Interview
- * POST /applications/:id/interview
+ * CREATE INTERVIEW
+ * POST /jobs/:jobId/interviews
  */
 export const scheduleInterview = async (req, res) => {
   try {
-    const applicationId = req.params.id;
+    const { jobId } = req.params;
 
-    const application = await JobApplication.findById(applicationId);
-    if (!application) {
-      return res.status(404).json({ message: "Application not found" });
+    const {
+      interviewMode,     // Walk-in | Slot-based
+      medium,            // Online | Onsite
+      interviewType,     // HR | Technical | Managerial
+      meetingLink,
+      location,
+      date,
+      timeRange,
+      instructions,
+    } = req.body;
+
+    // 🔎 Validate Job
+    const job = await Job.findById(jobId);
+    if (!job) {
+      return res.status(404).json({ message: "Job not found" });
     }
 
+    // 🧠 Conditional validation
+    if (medium === "Online" && !meetingLink) {
+      return res.status(400).json({ message: "Meeting link is required for online interview" });
+    }
+
+    if (medium === "Onsite" && !location) {
+      return res.status(400).json({ message: "Location is required for onsite interview" });
+    }
+
+    // 📝 Create interview
     const interview = await Interview.create({
-      user: application.applicant,
-      job: application.job,
-      company: application.company,
-      ...req.body,
+      job: job._id,
+      company: job.company,
+      interviewMode,
+      medium,
+      interviewType,
+      meetingLink,
+      location,
+      date,
+      timeRange,
+      instructions,
     });
 
-    application.interview = interview._id;
-    application.status = "interview";
-    await application.save();
+    // 🔁 UPDATE ALL APPLICATIONS (Walk-in logic)
+    if (interviewMode === "Walk-in") {
+      await JobApplication.updateMany(
+        { job: job._id, status: "applied" },
+        {
+          status: "interview",
+          interview: interview._id,
+        }
+      );
+    }
 
     res.status(201).json({
       message: "Interview scheduled successfully",
       interview,
     });
+
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
 /**
- * Update Interview
- * PUT /interviews/:id
+ * GET INTERVIEW by job
+ 
  */
-export const updateInterview = async (req, res) => {
+// GET /api/admin/interview/job/:jobId
+export const getInterviewByJob = async (req, res) => {
+  try {
+    const { jobId } = req.params;
+
+    const interviews = await Interview.find({ job: jobId })
+      .populate("job", "title")
+      .populate("company", "name")
+      .sort({ date: 1 });
+
+    // ✅ Always return 200
+    res.status(200).json(interviews);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+
+/**UPDATE INTERVIEW*/
+
+export const updateInterviewSchedule = async (req, res) => {
   try {
     const interview = await Interview.findByIdAndUpdate(
       req.params.id,
@@ -50,37 +109,62 @@ export const updateInterview = async (req, res) => {
       return res.status(404).json({ message: "Interview not found" });
     }
 
-    res.json({ message: "Interview updated", interview });
+    res.json({
+      message: "Interview updated successfully",
+      interview,
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
 /**
- * Cancel Interview
+ * CANCEL INTERVIEW
  * DELETE /interviews/:id
  */
-export const cancelInterview = async (req, res) => {
+export const cancelInterviewSchedule = async (req, res) => {
   try {
     const interview = await Interview.findById(req.params.id);
     if (!interview) {
       return res.status(404).json({ message: "Interview not found" });
     }
 
-    await JobApplication.findOneAndUpdate(
+    // 🔁 Revert applications
+    await JobApplication.updateMany(
       { interview: interview._id },
       {
-        interview: null,
         status: "applied",
+        interview: null,
       }
     );
 
     await interview.deleteOne();
 
     res.json({
-      message: "Interview cancelled and status reverted to applied",
+      message: "Interview cancelled and applicants reverted to applied",
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+
+/**
+ * GET interview by id
+ */
+// GET /api/admin/interview/interviews/:id
+export const getInterviewById = async (req, res) => {
+  try {
+    const interview = await Interview.findById(req.params.id)
+      .populate("job", "title")
+      .populate("company", "name");
+
+    if (!interview) {
+      return res.status(404).json({ message: "Interview not found" });
+    }
+
+    res.json(interview);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
