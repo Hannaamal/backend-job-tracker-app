@@ -16,7 +16,8 @@ export const getMyProfile = async (req, res, next) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const profile = await Profile.findOne({ user: userId });
+     const profile = await Profile.findOne({ user: userId })
+      .populate("skills", "_id name");
 
     res.status(200).json({
       user,
@@ -60,13 +61,15 @@ export const updateMyProfile = async (req, res) => {
       };
     }
 
+    
+
     delete req.body.user;
 
     const profile = await Profile.findOneAndUpdate(
       { user: userId },
       { $set: req.body },
-      { new: true, runValidators: true }
-    );
+      { new: true, runValidators: true })
+      .populate("skills", "name");//IMPORTANT
 
     res.status(200).json({ profile });
   } catch (err) {

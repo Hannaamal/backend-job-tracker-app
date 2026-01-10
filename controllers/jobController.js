@@ -4,15 +4,14 @@ import CompanySubscription from "../models/companySubscription.js";
 import Profile from "../models/profile.js";
 import { sendJobAlertEmail } from "../helpers/mailer.js";
 import Notification from "../models/notification.js";
-import Skill from "../models/skills.js"
+import Skill from "../models/skills.js";
 import { validationResult } from "express-validator";
-
 
 //JOB CREATION
 
 export const createJob = async (req, res, next) => {
   try {
-     const errors = validationResult(req);
+    const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
         message: "Validation failed",
@@ -79,17 +78,13 @@ export const createJob = async (req, res, next) => {
       );
       if (!isMatched) continue;
 
-
       await sendJobAlertEmail(sub.user.email, {
         name: sub.user.name,
         jobTitle: job.title,
         company: companyDoc.name,
         location: job.location,
         experience: job.experienceLevel || "Not specified",
-        jobLink: `${process.env.NEXT_PUBLIC_FRONTEND_URL}/job/${job._id}`
-
-        
-
+        jobLink: `${process.env.NEXT_PUBLIC_FRONTEND_URL}/job/${job._id}`,
       });
     }
 
@@ -135,6 +130,8 @@ export const getAllJobs = async (req, res) => {
       jobType,
       experience,
       remote,
+      salaryMin,
+      salaryMax,
     } = req.query;
 
     const query = { isActive: true };
@@ -187,7 +184,7 @@ export const getAllJobs = async (req, res) => {
       // If ID
       if (company.match(/^[0-9a-fA-F]{24}$/)) {
         query.company = company;
-      } 
+      }
       // If name
       else {
         const companyDoc = await Company.findOne({
@@ -200,6 +197,15 @@ export const getAllJobs = async (req, res) => {
 
         query.company = companyDoc._id;
       }
+    }
+    //salary
+
+    if (salaryMin) {
+      query["salaryRange.max"] = { $gte: Number(salaryMin) };
+    }
+
+    if (salaryMax) {
+      query["salaryRange.min"] = { $lte: Number(salaryMax) };
     }
 
     /* =========================
@@ -236,7 +242,6 @@ export const getAllJobs = async (req, res) => {
     });
   }
 };
-
 
 /**
  * GET JOB BY ID

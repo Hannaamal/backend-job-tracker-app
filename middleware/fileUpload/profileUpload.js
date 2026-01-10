@@ -2,38 +2,53 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 
-// Ensure uploads folder exists
-const uploadDir = "uploads/profiles";
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-// Storage configuration
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    // Use timestamp + fieldname for uniqueness
-    cb(null, `${Date.now()}-${file.fieldname}${ext}`);
-  },
-});
-
-// File filter - only images
-const fileFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith("image/")) {
-    cb(null, true);
-  } else {
-    cb(new Error("Only image files are allowed for profile pictures"), false);
+const ensureDir = (dir) => {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
   }
 };
 
-// Limit size to 2MB
-const uploadProfile = multer({
-  storage,
-  fileFilter,
-  limits: { fileSize: 1024 * 1024 * 2 }, // 2MB max
+ensureDir("uploads/profiles");
+ensureDir("uploads/resumes");
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    if (file.fieldname === "avatar") {
+      cb(null, "uploads/profiles");
+    } else if (file.fieldname === "resume") {
+      cb(null, "uploads/resumes");
+    }
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}-${file.fieldname}${path.extname(file.originalname)}`);
+  },
 });
 
-export default uploadProfile;
+const fileFilter = (req, file, cb) => {
+  if (file.fieldname === "avatar") {
+    if (file.mimetype.startsWith("image/")) return cb(null, true);
+    return cb(new Error("Avatar must be an image"), false);
+  }
+
+  if (file.fieldname === "resume") {
+    const allowed = [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
+    if (allowed.includes(file.mimetype)) return cb(null, true);
+    return cb(new Error("Resume must be PDF or Word"), false);
+  }
+
+  cb(null, false);
+};
+
+const uploadProfileFiles = multer({
+  storage,
+  fileFilter,
+  limits: {
+    fileSize: 5 * 1024 * 1024,
+  },
+});
+
+export default uploadProfileFiles;

@@ -4,7 +4,15 @@ export const getUserNotifications = async (req, res) => {
   try {
     const notifications = await Notification.find({ user: req.userData.userId })
       .sort({ createdAt: -1 })  // latest first
-      .populate('job', 'title company location'); // optional: populate job info
+       .sort({ createdAt: -1 })
+      .populate({
+        path: "job",
+        select: "title location company",
+        populate: {
+          path: "company",
+          select: "name",
+        },
+      }); // optional: populate job info
 
     res.status(200).json(notifications);
   } catch (err) {
