@@ -18,6 +18,8 @@ import adminApplicationRouter from "./routes/admin/adminApplicationRoutes.js"
 import dashboardRouter from "./routes/admin/dashboardRoutes.js"
 import interviewRouter from "./routes/admin/interviewSchedulerRoutes.js"
 
+
+
 dotenv.config();
 const app = express();
 app.disable("etag");
@@ -30,7 +32,10 @@ app.use(express.json());
 
 //file upload
 
+
+
 app.use("/uploads", express.static("uploads"));
+
 
 
 // MongoDB Connection
