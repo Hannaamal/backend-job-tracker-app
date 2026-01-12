@@ -46,10 +46,28 @@ mongoose
 
 
 
-app.use(cors({
-  origin: "https://job-portal-frontend-id1t.vercel.app", // your frontend URL
-  credentials: true,               // allow cookies/auth headers
-}));
+const allowedOrigins = [
+  "https://job-portal-frontend-id1t.vercel.app",
+];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error("Not allowed by CORS"));
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
+// ✅ VERY IMPORTANT (preflight support)
+app.options("*", cors());
+
 
 // Routes
 app.use('/api/job',jobRouter)
