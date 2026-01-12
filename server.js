@@ -65,8 +65,6 @@ app.use(
   })
 );
 
-// ✅ VERY IMPORTANT (preflight support)
-app.options("*", cors());
 
 
 // Routes
