@@ -47,17 +47,24 @@ mongoose
 
 
 const allowedOrigins = [
-  "https://job-portal-frontend-id1t.vercel.app",
+  "http://localhost:3000", // local dev
+  "https://job-portal-frontend-id1t.vercel.app", // production
 ];
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-      return callback(new Error("Not allowed by CORS"));
+      console.log("CORS request from:", origin); // debug
+      if (!origin) return callback(null, true); // allow Postman or curl
+
+      // allow exact matches
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+
+      // allow any vercel preview deploy
+      if (/\.vercel\.app$/.test(origin)) return callback(null, true);
+
+      console.warn("Blocked by CORS:", origin);
+      return callback(null, false); // reject gracefully
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
