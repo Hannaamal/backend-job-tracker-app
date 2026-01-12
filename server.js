@@ -47,7 +47,7 @@ mongoose
 
 
 app.use(cors({
-  origin: "http://localhost:3000", // your frontend URL
+  origin: "https://job-portal-frontend-id1t.vercel.app", // your frontend URL
   credentials: true,               // allow cookies/auth headers
 }));
 
