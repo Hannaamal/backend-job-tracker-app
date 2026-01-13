@@ -51,14 +51,16 @@ export const register = async (req, res, next) => {
     res.cookie("auth_token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax", // "none" if frontend & backend are on different domains (HTTPS)
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: "/",
     });
     res.cookie("user_role", user.role, {
-      httpOnly: false, // must be false to read in frontend
+      httpOnly: false,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: "/",
     });
     
     // Debug: Log cookie settings
@@ -113,14 +115,16 @@ export const login = async (req, res, next) => {
     res.cookie("auth_token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax", // "none" if frontend & backend are on different domains (HTTPS)
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: "/",
     });
     res.cookie("user_role", user.role, {
-      httpOnly: false, // must be false to read in frontend
+      httpOnly: false,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: "/",
     });
 
     res.status(200).json({
@@ -160,15 +164,15 @@ export const logout = (req, res) => {
   res.clearCookie("auth_token", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/", // ✅ MUST MATCH
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    path: "/",
   });
 
   res.clearCookie("user_role", {
-    httpOnly: true,
+    httpOnly: false,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/", // ✅ MUST MATCH
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    path: "/",
   });
 
   res.status(200).json({ message: "Logged out successfully" });
