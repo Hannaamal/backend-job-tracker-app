@@ -33,11 +33,21 @@ export const register = async (req, res, next) => {
     });
 
     // Generate token
+    const tokenPayload = { id: user._id, role: user.role };
     const token = jwt.sign(
-      { id: user._id, role: user.role },
+      tokenPayload,
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_TOKEN_EXPIRY }
     );
+    
+    // Debug: Log the token payload and structure
+    console.log("=== JWT DEBUG INFO ===");
+    console.log("Token payload:", tokenPayload);
+    console.log("Token (first 50 chars):", token.substring(0, 50) + "...");
+    console.log("User role:", user.role);
+    console.log("User ID:", user._id);
+    console.log("=== END JWT DEBUG ===");
+    
     res.cookie("auth_token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -50,6 +60,14 @@ export const register = async (req, res, next) => {
       sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
+    
+    // Debug: Log cookie settings
+    console.log("=== COOKIE SET DEBUG ===");
+    console.log("auth_token cookie set with value:", token.substring(0, 50) + "...");
+    console.log("user_role cookie set with value:", user.role);
+    console.log("NODE_ENV:", process.env.NODE_ENV);
+    console.log("secure flag:", process.env.NODE_ENV === "production");
+    console.log("=== END COOKIE DEBUG ===");
 
     res.status(201).json({
       message: "User registered successfully",
@@ -155,4 +173,3 @@ export const logout = (req, res) => {
 
   res.status(200).json({ message: "Logged out successfully" });
 };
-

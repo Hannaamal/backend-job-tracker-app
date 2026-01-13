@@ -6,6 +6,14 @@ const userAuthCheck = async (req, res, next) => {
   if (req.method === "OPTIONS") return next();
 
   try {
+    // Debug: Log incoming request info
+    console.log("=== AUTH MIDDLEWARE DEBUG ===");
+    console.log("Request URL:", req.originalUrl);
+    console.log("Cookies:", req.cookies);
+    console.log("Authorization header:", req.headers.authorization);
+    console.log("auth_token cookie:", req.cookies?.auth_token);
+    console.log("=== END AUTH DEBUG ===");
+
     // ✅ 1. Get token from cookie FIRST
     let token = req.cookies?.auth_token;
 
@@ -15,8 +23,11 @@ const userAuthCheck = async (req, res, next) => {
     }
 
     if (!token) {
+      console.log("❌ No token found - returning 401");
       return next(new HttpError("Unauthorized", 401));
     }
+
+    console.log("✅ Token found:", token.substring(0, 50) + "...");
 
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
 
