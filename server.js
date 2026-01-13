@@ -17,6 +17,7 @@ import saveRouter from "./routes/saveJobRoutes.js";
 import adminApplicationRouter from "./routes/admin/adminApplicationRoutes.js"
 import dashboardRouter from "./routes/admin/dashboardRoutes.js"
 import interviewRouter from "./routes/admin/interviewSchedulerRoutes.js"
+import { debugCookies } from "./controllers/debugController.js";
 
 
 
@@ -91,6 +92,9 @@ app.use("/api/admin/users", adminUserRoutes);
 app.use("/api/admin/application",adminApplicationRouter)
 app.use("/api/admin/interview",interviewRouter)
 app.use("/api/admin/dash",dashboardRouter)
+
+// Debug route to check cookies and JWT structure
+app.get("/api/debug/cookies", debugCookies);
 
 
 
