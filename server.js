@@ -48,7 +48,7 @@ mongoose
 
 const allowedOrigins = [
   "http://localhost:3000", // local dev
-  "https://job-portal-frontend-id1t.vercel.app", // production
+  "https://job-portal-frontend-id1t-ihl5n2kez-amalhannas-projects.vercel.app/", // production
 ];
 
 app.use(
