@@ -99,3 +99,17 @@ app.listen(PORT, () =>
   console.log(`Server running on port ${PORT}`)
 );
 
+
+
+// Global error handler (REQUIRED)
+app.use((error, req, res, next) => {
+  console.error(error);
+
+  if (res.headersSent) {
+    return next(error);
+  }
+
+  res.status(error.code || 500).json({
+    message: error.message || "An unknown error occurred",
+  });
+});
