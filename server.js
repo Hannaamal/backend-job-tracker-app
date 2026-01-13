@@ -95,13 +95,7 @@ app.use("/api/admin/dash",dashboardRouter)
 
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () =>
-  console.log(`Server running on port ${PORT}`)
-);
 
-
-
-// Global error handler (REQUIRED)
 app.use((error, req, res, next) => {
   console.error(error);
 
@@ -113,3 +107,11 @@ app.use((error, req, res, next) => {
     message: error.message || "An unknown error occurred",
   });
 });
+
+app.listen(PORT, () =>
+  console.log(`Server running on port ${PORT}`)
+);
+
+
+
+// Global error handler (REQUIRED)
