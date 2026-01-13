@@ -2,20 +2,20 @@ import Notification from '../models/notification.js';
 
 export const getUserNotifications = async (req, res) => {
   try {
-    const notifications = await Notification.find({ user: req.userData.userId })
+    const notifications = await Notification.find({ user: req.user._id })
       .sort({ createdAt: -1 })  // latest first
-       .sort({ createdAt: -1 })
       .populate({
         path: "job",
         select: "title location company",
-        populate: {
-          path: "company",
-          select: "name",
-        },
+      })
+      .populate({
+        path: "job.company",
+        select: "name",
       }); // optional: populate job info
 
     res.status(200).json(notifications);
   } catch (err) {
+    console.error('Error fetching notifications:', err);
     res.status(500).json({ message: 'Failed to fetch notifications', error: err.message });
   }
 };
