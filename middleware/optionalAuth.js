@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import User from "../models/user.js";
 
 const optionalAuth = async (req, res, next) => {
-  let token = req.cookies?.auth_token;
+  let token = req.cookies?.auth_token || req.cookies?.versal_jwt;
 
   if (!token && req.headers.authorization?.startsWith("Bearer ")) {
     token = req.headers.authorization.split(" ")[1];

@@ -14,8 +14,8 @@ const userAuthCheck = async (req, res, next) => {
     console.log("auth_token cookie:", req.cookies?.auth_token);
     console.log("=== END AUTH DEBUG ===");
 
-    // ✅ 1. Get token from cookie FIRST
-    let token = req.cookies?.auth_token;
+    // ✅ 1. Get token from cookie FIRST - check both possible names
+    let token = req.cookies?.auth_token || req.cookies?.versal_jwt;
 
     // ✅ 2. Fallback to Authorization header
     if (!token && req.headers.authorization?.startsWith("Bearer ")) {
