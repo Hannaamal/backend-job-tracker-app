@@ -54,13 +54,21 @@ const allowedOrigins = [
 
 app.use(
   cors({
-    origin: [
-      "http://localhost:3000",
-      "https://job-portal-frontend-2u0pb7f1b-amalhannas-projects.vercel.app/"
-    ],
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true); // allow Postman or curl
+
+      // allow exact matches
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+
+      // allow any vercel preview deploy
+      if (/\.vercel\.app$/.test(origin)) return callback(null, true);
+
+      console.warn("Blocked by CORS:", origin);
+      return callback(null, false); // reject gracefully
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
   })
 );
 
