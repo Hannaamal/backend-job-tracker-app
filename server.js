@@ -54,7 +54,6 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: (origin, callback) => {
-      console.log("CORS request from:", origin); // debug
       if (!origin) return callback(null, true); // allow Postman or curl
 
       // allow exact matches
@@ -69,10 +68,8 @@ app.use(
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
-
   })
 );
-app.use(cors());
 
 
 
