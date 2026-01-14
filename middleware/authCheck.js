@@ -9,10 +9,10 @@ const userAuthCheck = async (req, res, next) => {
     // ✅ 1. Check cookies first
     let token = req.cookies?.auth_token;
 
-    // ✅ 2. Fallback to Authorization header
-    if (!token && req.headers.authorization?.startsWith("Bearer ")) {
-      token = req.headers.authorization.split(" ")[1];
-    }
+    // // ✅ 2. Fallback to Authorization header
+    // if (!token && req.headers.authorization?.startsWith("Bearer ")) {
+    //   token = req.headers.authorization.split(" ")[1];
+    // }
 
     if (!token) {
       return next(new HttpError("Unauthorized", 401));
