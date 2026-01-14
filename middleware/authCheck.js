@@ -35,6 +35,7 @@ const userAuthCheck = async (req, res, next) => {
 
     next();
   } catch (err) {
+    console.log(err)
     return next(new HttpError("Authentication failed", 401));
   }
 };
