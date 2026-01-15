@@ -56,7 +56,7 @@ export const register = async (req, res, next) => {
       path: "/",
     });
     res.cookie("user_role", user.role, {
-      httpOnly: false,
+      httpOnly: true,
       secure: true,
       sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000,
@@ -120,7 +120,7 @@ export const login = async (req, res, next) => {
       path: "/",
     });
     res.cookie("user_role", user.role, {
-      httpOnly: false,
+      httpOnly: true,
       secure: true,
       sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000,
@@ -169,7 +169,7 @@ export const logout = (req, res) => {
   });
 
   res.clearCookie("user_role", {
-    httpOnly: false,
+    httpOnly: true,
     secure: true,
     sameSite: "none",
     path: "/",
