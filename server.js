@@ -61,7 +61,9 @@ app.use(
       if (allowedOrigins.includes(origin)) return callback(null, true);
 
       // allow any vercel preview deploy
-      if (/\.vercel\.app$/.test(origin)) return callback(null, true);
+      // if (/\.vercel\.app$/.test(origin)) return callback(null, true);
+      if (origin.includes(".vercel.app")) return callback(null, true);
+
 
       console.warn("Blocked by CORS:", origin);
       return callback(null, false); // reject gracefully
