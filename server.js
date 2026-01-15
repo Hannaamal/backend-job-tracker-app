@@ -52,27 +52,51 @@ const allowedOrigins = [
   "https://job-portal-frontend-id1t-ihl5n2kez-amalhannas-projects.vercel.app", // production
 ];
 
+// app.use(
+//   cors({
+//     origin: (origin, callback) => {
+//       if (!origin) return callback(null, true); // allow Postman or curl
+
+//       // allow exact matches
+//       if (allowedOrigins.includes(origin)) return callback(null, true);
+
+//       // allow any vercel preview deploy
+//       // if (/\.vercel\.app$/.test(origin)) return callback(null, true);
+//       if (origin.includes(".vercel.app")) return callback(null, true);
+
+
+//       console.warn("Blocked by CORS:", origin);
+//       return callback(null, false); // reject gracefully
+//     },
+//     credentials: true,
+//     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+//     allowedHeaders: ["Content-Type", "Authorization"],
+//   })
+// );
+
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin) return callback(null, true); // allow Postman or curl
+      if (!origin) return callback(null, true); // allow Postman, curl, server-to-server
 
-      // allow exact matches
-      if (allowedOrigins.includes(origin)) return callback(null, true);
-
-      // allow any vercel preview deploy
-      // if (/\.vercel\.app$/.test(origin)) return callback(null, true);
-      if (origin.includes(".vercel.app")) return callback(null, true);
-
+      if (
+        origin === "http://localhost:3000" ||
+        origin.includes(".vercel.app")
+      ) {
+        return callback(null, true);
+      }
 
       console.warn("Blocked by CORS:", origin);
-      return callback(null, false); // reject gracefully
+      return callback(new Error("Not allowed by CORS")); // ✅ IMPORTANT FIX
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+app.options("*", cors());
+
 
 
 
