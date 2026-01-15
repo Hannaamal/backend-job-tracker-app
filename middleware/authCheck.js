@@ -5,28 +5,30 @@ import HttpError from "../helpers/httpError.js";
 const userAuthCheck = async (req, res, next) => {
   if (req.method === "OPTIONS") return next();
 
-  try {
-    // ✅ 1. Check cookies first
-    let token = req.cookies?.auth_token;
+   try {
+    const authHeader = req.headers.authorization;
 
-    // // ✅ 2. Fallback to Authorization header
-    // if (!token && req.headers.authorization?.startsWith("Bearer ")) {
-    //   token = req.headers.authorization.split(" ")[1];
-    // }
+    // 1️⃣ Check header
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return next(new HttpError("Unauthorized", 401));
+    }
 
+    // 2️⃣ Extract token
+    const token = authHeader.split(" ")[1];
     if (!token) {
       return next(new HttpError("Unauthorized", 401));
     }
 
+    // 3️⃣ Verify token
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
 
+    // 4️⃣ Find user
     const user = await User.findById(decodedToken.id);
     if (!user) {
       return next(new HttpError("User not found", 401));
     }
 
-
-    req.user = user;
+    // 5️⃣ Attach user data
     req.userData = {
       userId: decodedToken.id,
       userRole: decodedToken.role,
@@ -35,7 +37,6 @@ const userAuthCheck = async (req, res, next) => {
 
     next();
   } catch (err) {
-    console.log(err)
     return next(new HttpError("Authentication failed", 401));
   }
 };

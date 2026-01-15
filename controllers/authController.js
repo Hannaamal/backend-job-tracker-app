@@ -147,14 +147,23 @@ export const login = async (req, res, next) => {
    GET CURRENT USER
 ====================== */
 export const me = async (req, res) => {
-  res.status(200).json({
-    user: {
-      id: req.user.id,
-      name: req.user.name,
-      email: req.user.email,
-      role: req.user.role,
-    },
-  });
+  try {
+    const user = await User.findById(req.userData.userId).select("name email role");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    
+    res.status(200).json({
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to get user info", error: error.message });
+  }
 };
 
 /* ======================
