@@ -55,19 +55,45 @@ const allowedOrigins = [
   'https://job-portal-frontend-9egrxhnfn-amalhannas-projects.vercel.app'
 ];
 
+
+
 app.use(cors({
-  origin: function (origin, callback) {
-    // allow requests with no origin (mobile apps, curl, Postman)
+  origin: (origin, callback) => {
+    const allowedOrigins = [
+      "http://localhost:3000",
+      "https://job-portal-frontend-q2vdxht2b-amalhannas-projects.vercel.app",
+      "https://job-portal-frontend-teal-tau.vercel.app/",
+      "https://job-portal-frontend-amalhannas-projects.vercel.app/",
+      "https://job-portal-frontend-git-main-amalhannas-projects.vercel.app/",
+      "https://job-portal-frontend-9egrxhnfn-amalhannas-projects.vercel.app",
+    ];
+
     if (!origin) return callback(null, true);
 
     if (allowedOrigins.includes(origin)) {
-      callback(null, true);
+      callback(null, origin);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      callback(new Error("Not allowed by CORS"));
     }
   },
   credentials: true,
+  methods: ["GET", "POST", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 }));
+
+// app.use(cors({
+//   origin: function (origin, callback) {
+//     // allow requests with no origin (mobile apps, curl, Postman)
+//     if (!origin) return callback(null, true);
+
+//     if (allowedOrigins.includes(origin)) {
+//       callback(null, true);
+//     } else {
+//       callback(new Error('Not allowed by CORS'));
+//     }
+//   },
+//   credentials: true,
+// }));
 
 // app.use(
 //   cors({
