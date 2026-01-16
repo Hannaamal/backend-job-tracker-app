@@ -56,9 +56,6 @@ mongoose
 // ];
 
 
-
-import cors from "cors";
-
 app.use(
   cors({
     origin: (origin, callback) => {
