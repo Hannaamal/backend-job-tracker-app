@@ -46,11 +46,13 @@ mongoose
   .catch(err => console.error(err));
 
 
-
 const allowedOrigins = [
   'http://localhost:3000',
-  'https://job-portal-frontend-h9g6u7soe-amalhannas-projects.vercel.app',
-  'https://job-portal-frontend-h9g6u7soe-amalhannas-projects.vercel.app',
+  'https://job-portal-frontend-q2vdxht2b-amalhannas-projects.vercel.app',
+  'https://job-portal-frontend-teal-tau.vercel.app/',
+  'https://job-portal-frontend-amalhannas-projects.vercel.app/',
+  'https://job-portal-frontend-git-main-amalhannas-projects.vercel.app/',
+  'https://job-portal-frontend-q2vdxht2b-amalhannas-projects.vercel.app/'
 ];
 
 app.use(cors({
