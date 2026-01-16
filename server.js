@@ -56,34 +56,27 @@ mongoose
 // ];
 
 
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://job-portal-frontend-23ouqg7q7-amalhannas-projects.vercel.app/", // add your real Vercel URL
+];
+
 app.use(
   cors({
-    origin: (origin, callback) => {
-      console.log("🌐 Incoming origin:", origin);
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true); // allow Postman, mobile apps
 
-      // Allow server-to-server, Postman, mobile apps
-      if (!origin) return callback(null, true);
-
-      // Localhost
-      if (origin === "http://localhost:3000") {
+      if (allowedOrigins.includes(origin)) {
         return callback(null, true);
+      } else {
+        return callback(new Error("Not allowed by CORS"));
       }
-
-      if (origin === "https://job-portal-frontend-amalhannas-projects.vercel.app") {
-        return callback(null, true);
-      }
-
-      // Allow ALL Vercel deployments
-      if (/^https:\/\/.*\.vercel\.app$/.test(origin)) {
-        return callback(null, true);
-      }
-
-      console.error("❌ CORS BLOCKED:", origin);
-      return callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
   })
 );
+
+
 
 // app.use(cors({
 //   origin: function (origin, callback) {
