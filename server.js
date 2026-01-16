@@ -63,18 +63,25 @@ const allowedOrigins = [
 
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin) return callback(null, true); // allow Postman, mobile apps
+    origin: (origin, callback) => {
+      console.log("Incoming request origin:", origin);
 
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      } else {
-        return callback(new Error("Not allowed by CORS"));
-      }
+      // Allow Postman, curl, server-to-server (no origin)
+      if (!origin) return callback(null, true);
+
+      // Allow localhost
+      if (origin === "http://localhost:3000") return callback(null, true);
+
+      // Allow any Vercel deployment (main + preview)
+      if (origin.endsWith(".vercel.app")) return callback(null, true);
+
+      // Otherwise, block
+      return callback(new Error("Not allowed by CORS"));
     },
-    credentials: true,
+    credentials: true, // IMPORTANT for cookies
   })
 );
+
 
 
 
