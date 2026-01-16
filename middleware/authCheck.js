@@ -7,9 +7,16 @@ const userAuthCheck = async (req, res, next) => {
 
   try {
     /* =====================
-       1️⃣ TOKEN FROM COOKIE ONLY
+       1️⃣ GET TOKEN FROM AUTH HEADER
     ===================== */
-    const token = req.cookies?.auth_token;
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return next(new HttpError("Unauthorized", 401));
+    }
+
+    const token = authHeader.split(" ")[1]; // Extract token
+    console.log("Extracted Token:", token);
 
     if (!token) {
       return next(new HttpError("Unauthorized", 401));
