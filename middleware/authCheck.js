@@ -5,30 +5,42 @@ import HttpError from "../helpers/httpError.js";
 const userAuthCheck = async (req, res, next) => {
   if (req.method === "OPTIONS") return next();
 
-   try {
-    const authHeader = req.headers.authorization;
+  try {
+    // ✅ 1. Check cookies first
+    let token = req.cookies?.auth_token;
 
-    // 1️⃣ Check header
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return next(new HttpError("Unauthorized", 401));
+    // ✅ 2. Fallback to Authorization header
+    if (!token && req.headers.authorization?.startsWith("Bearer ")) {
+      token = req.headers.authorization.split(" ")[1];
     }
 
-    // 2️⃣ Extract token
-    const token = authHeader.split(" ")[1];
     if (!token) {
+      console.log("=== TOKEN NOT FOUND DEBUG ===");
+      console.log("Cookies:", req.cookies);
+      console.log("Headers:", req.headers.authorization);
+      console.log("=== END TOKEN NOT FOUND DEBUG ===");
       return next(new HttpError("Unauthorized", 401));
     }
 
-    // 3️⃣ Verify token
-    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+    console.log("=== TOKEN FOUND DEBUG ===");
+    console.log("Token:", token.substring(0, 50) + "...");
+    console.log("=== END TOKEN FOUND DEBUG ===");
 
-    // 4️⃣ Find user
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+    
+    // Debug: Log the decoded token structure
+    console.log("=== DECODED TOKEN DEBUG ===");
+    console.log("Decoded token:", decodedToken);
+    console.log("Token ID:", decodedToken.id);
+    console.log("Token role:", decodedToken.role);
+    console.log("=== END DECODED TOKEN DEBUG ===");
+
     const user = await User.findById(decodedToken.id);
     if (!user) {
       return next(new HttpError("User not found", 401));
     }
 
-    // 5️⃣ Attach user data
+    req.user = user;
     req.userData = {
       userId: decodedToken.id,
       userRole: decodedToken.role,
@@ -37,6 +49,7 @@ const userAuthCheck = async (req, res, next) => {
 
     next();
   } catch (err) {
+    console.log(err)
     return next(new HttpError("Authentication failed", 401));
   }
 };
