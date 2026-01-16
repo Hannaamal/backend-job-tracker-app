@@ -6,43 +6,37 @@ const userAuthCheck = async (req, res, next) => {
   if (req.method === "OPTIONS") return next();
 
   try {
-    /* =====================
-       1️⃣ GET TOKEN FROM AUTH HEADER
-    ===================== */
-    const authHeader = req.headers.authorization;
+    let token;
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return next(new HttpError("Unauthorized.....", 401));
+    // 1️⃣ Try Authorization header
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      token = authHeader.split(" ")[1];
     }
 
-    const token = authHeader.split(" ")[1]; // Extract token
-    console.log("Extracted Token:", token);
+    // 2️⃣ Fallback: cookie (optional safety)
+    if (!token && req.cookies?.auth_token) {
+      token = req.cookies.auth_token;
+    }
 
     if (!token) {
       return next(new HttpError("Unauthorized", 401));
     }
 
-    /* =====================
-       2️⃣ VERIFY JWT
-    ===================== */
+    // 3️⃣ Verify token
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
 
     if (!decodedToken?.id || !decodedToken?.role) {
       return next(new HttpError("Invalid token", 401));
     }
 
-    /* =====================
-       3️⃣ FIND USER
-    ===================== */
+    // 4️⃣ Find user
     const user = await User.findById(decodedToken.id).select("-password");
-
     if (!user) {
       return next(new HttpError("User not found", 401));
     }
 
-    /* =====================
-       4️⃣ ATTACH USER DATA
-    ===================== */
+    // 5️⃣ Attach user
     req.user = user;
     req.userData = {
       userId: user._id,
@@ -55,5 +49,6 @@ const userAuthCheck = async (req, res, next) => {
     return next(new HttpError("Authentication failed", 401));
   }
 };
+
 
 export default userAuthCheck;
