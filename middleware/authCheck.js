@@ -11,6 +11,8 @@ const userAuthCheck = async (req, res, next) => {
     }
 
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+    console.log("RAW TOKEN:", token);
+    console.log("DECODED:", decodedToken);
 
     if (!decodedToken?.id || !decodedToken?.role) {
       return next(new HttpError("Invalid token", 401));

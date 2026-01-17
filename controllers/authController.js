@@ -49,7 +49,6 @@ export const register = async (req, res) => {
         email: user.email,
         role: user.role,
       },
-      token,
     });
   } catch (error) {
     res
@@ -72,6 +71,8 @@ export const login = async (req, res) => {
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid email or password" });
     }
+    console.log("USER ROLE:", user.role);
+
 
     const token = jwt.sign(
       { id: user._id, role: user.role },
@@ -88,15 +89,14 @@ export const login = async (req, res) => {
     });
 
     res.status(200).json({
-  message: "Login successful",
-  user: {
-    id: user._id,
-    name: user.name,
-    email: user.email,
-    role: user.role,
-  }
-});
-
+      message: "Login successful",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    });
   } catch (error) {
     res.status(500).json({ message: "Login failed", error: error.message });
   }
@@ -127,8 +127,8 @@ export const me = async (req, res) => {
 export const logout = (req, res) => {
   res.clearCookie("auth_token", {
     httpOnly: true,
-    secure: "none",
-    sameSite: "lax",
+    secure: true,
+    sameSite: "None",
     path: "/",
   });
 
