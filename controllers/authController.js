@@ -35,11 +35,10 @@ export const register = async (req, res) => {
 
     // ✅ SET COOKIE (JS readable)
     res.cookie("auth_token", token, {
-      httpOnly: true, 
-      secure:"none",
-      sameSite:"lax",
+      httpOnly: true, // hide from JS
+      secure: true, // only HTTPS
+      sameSite: "None", // allow cross-site
       maxAge: 7 * 24 * 60 * 60 * 1000,
-      path: "/",
     });
 
     res.status(201).json({
@@ -53,10 +52,11 @@ export const register = async (req, res) => {
       token,
     });
   } catch (error) {
-    res.status(500).json({ message: "Registration failed", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Registration failed", error: error.message });
   }
 };
-
 
 /*LOGIN*/
 export const login = async (req, res) => {
@@ -81,11 +81,10 @@ export const login = async (req, res) => {
 
     // ✅ SET COOKIE (JS readable)
     res.cookie("auth_token", token, {
-      httpOnly: true, 
-      secure:"none",
-      sameSite:"lax",
+      httpOnly: true, // hide from JS
+      secure: true, // only HTTPS
+      sameSite: "None", // allow cross-site
       maxAge: 7 * 24 * 60 * 60 * 1000,
-      path: "/",
     });
 
     res.status(200).json({
@@ -103,14 +102,14 @@ export const login = async (req, res) => {
   }
 };
 
-
-
 /* ======================
    GET CURRENT USER
 ====================== */
 export const me = async (req, res) => {
   try {
-    const user = await User.findById(req.userData.userId).select("name email role");
+    const user = await User.findById(req.userData.userId).select(
+      "name email role"
+    );
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -122,18 +121,16 @@ export const me = async (req, res) => {
   }
 };
 
-
 /* ======================
    LOGOUT
 ====================== */
 export const logout = (req, res) => {
   res.clearCookie("auth_token", {
     httpOnly: true,
-    secure:"none",
-    sameSite:"lax",
+    secure: "none",
+    sameSite: "lax",
     path: "/",
   });
 
   res.status(200).json({ message: "Logged out successfully" });
 };
-
