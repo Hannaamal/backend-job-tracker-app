@@ -1,21 +1,38 @@
 import jwt from "jsonwebtoken";
 import User from "../models/user.js";
+import HttpError from "../helpers/httpError.js";
 
 const userAuthCheck = async (req, res, next) => {
   try {
     const token = req.cookies?.auth_token;
-    if (!token) return res.status(401).json({ message: "Unauthorized" });
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (!token) {
+      return next(new HttpError("Unauthorized", 401));
+    }
 
-    const user = await User.findById(decoded.id).select("-password");
-    if (!user) return res.status(401).json({ message: "User not found" });
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+
+    if (!decodedToken?.id || !decodedToken?.role) {
+      return next(new HttpError("Invalid token", 401));
+    }
+
+    const user = await User.findById(decodedToken.id).select("-password");
+    if (!user) {
+      return next(new HttpError("User not found", 401));
+    }
 
     req.user = user;
+    req.userData = {
+      userId: user._id,
+      userRole: user.role,
+      userEmail: user.email,
+    };
+
     next();
-  } catch {
-    return res.status(401).json({ message: "Authentication failed" });
+  } catch (err) {
+    return next(new HttpError("Authentication failed", 401));
   }
 };
+
 
 export default userAuthCheck;
