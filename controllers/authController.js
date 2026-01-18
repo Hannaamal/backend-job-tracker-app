@@ -35,7 +35,7 @@ export const register = async (req, res) => {
 
     // ✅ SET COOKIE (JS readable)
     res.cookie("auth_token", token, {
-      httpOnly: true, // hide from JS
+      httpOnly: false, // allow JS access
       secure: true, // only HTTPS
       sameSite: "None", // allow cross-site
       maxAge: 7 * 24 * 60 * 60 * 1000,
@@ -82,7 +82,7 @@ export const login = async (req, res) => {
 
     // ✅ SET COOKIE (JS readable)
     res.cookie("auth_token", token, {
-      httpOnly: true, // hide from JS
+      httpOnly: false, // allow JS access
       secure: true, // only HTTPS
       sameSite: "None", // allow cross-site
       maxAge: 7 * 24 * 60 * 60 * 1000,
@@ -126,7 +126,7 @@ export const me = async (req, res) => {
 ====================== */
 export const logout = (req, res) => {
   res.clearCookie("auth_token", {
-    httpOnly: true,
+    httpOnly: false,
     secure: true,
     sameSite: "None",
     path: "/",
