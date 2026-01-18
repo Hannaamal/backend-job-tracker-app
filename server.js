@@ -25,7 +25,7 @@ dotenv.config();
 const app = express();
 app.set("trust proxy", 1);
 
-app.disable("etag");
+// app.disable("etag");
 
 // cookies
 app.use(cookieParser());
