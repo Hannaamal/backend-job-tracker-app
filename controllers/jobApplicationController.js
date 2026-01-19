@@ -98,31 +98,33 @@ export const getMyApplications = async (req, res) => {
  */
 
 
+// controllers/jobApplicationController.js
 export const withdrawApplication = async (req, res, next) => {
   try {
-    const applicantId = req.userData.userId; // from auth middleware
-    const jobId = req.params.jobId;
+    const applicantId = req.userData.userId;
+    const applicationId = req.params.applicationId; // ✅ application ID
 
-    // Find the application
-    const application = await JobApplication.findOne({
-      job: jobId,
+    const deletedApplication = await JobApplication.findOneAndDelete({
+      _id: applicationId,
       applicant: applicantId,
-      is_deleted: false, // only active applications
     });
 
-    if (!application) {
+    if (!deletedApplication) {
       return res.status(404).json({ message: "Application not found" });
     }
 
-    // Soft delete by setting is_deleted to true
-    application.is_deleted = true;
-    await application.save();
-
-    res.status(200).json({ message: "Application withdrawn successfully" });
+    res.status(200).json({
+      message: "Application withdrawn successfully",
+      deletedApplicationId: deletedApplication._id,
+    });
   } catch (error) {
     next(error);
   }
 };
+
+
+
+
 
 
 

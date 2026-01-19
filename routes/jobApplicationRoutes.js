@@ -15,7 +15,7 @@ const applyRouter = express.Router();
 applyRouter.get("/check/:jobId",userAuthCheck,checkJobApplied);
 applyRouter.post( "/apply/:jobId",userAuthCheck,uploadResume.single("resume"),applyForJob);
 applyRouter.get("/my-applications", userAuthCheck, getMyApplications);
-applyRouter.put("/withdraw/:jobId",userAuthCheck,withdrawApplication);
+applyRouter.delete("/withdraw/:applicationId", userAuthCheck, withdrawApplication);
 
 
 
