@@ -39,6 +39,7 @@ export const register = async (req, res) => {
       secure: true, // only HTTPS
       sameSite: "None", // allow cross-site
       maxAge: 7 * 24 * 60 * 60 * 1000,
+       path: "/",  
     });
 
     res.status(201).json({
@@ -86,6 +87,7 @@ export const login = async (req, res) => {
       secure: true, 
       sameSite: "None", // allow cross-site
       maxAge: 7 * 24 * 60 * 60 * 1000,
+       path: "/",  
     });
 
     res.status(200).json({
