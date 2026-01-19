@@ -5,6 +5,7 @@ import HttpError from "../helpers/httpError.js";
 const userAuthCheck = async (req, res, next) => {
   try {
     const token = req.cookies?.auth_token;
+    console.log("COOKIE RECEIVED:", token);
 
     if (!token) {
       return next(new HttpError("Unauthorized", 401));
