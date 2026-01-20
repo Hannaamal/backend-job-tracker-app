@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html>
   <body>
     <h2>Hello {{applicantName}},</h2>
@@ -11,7 +10,9 @@
       <p><strong>Date:</strong> {{interviewDate}}</p>
       <p>
         <strong>Time:</strong>
-        {{interviewTime.start}} - {{interviewTime.end}}
+        {{interviewTime.start}}
+        -
+        {{interviewTime.end}}
       </p>
 
       {{#ifEquals medium "Online"}}
@@ -31,11 +32,41 @@
     {{#ifEquals type "canceled"}}
       <p>
         ⚠️ Unfortunately, your interview for the position of
-        <strong>{{jobTitle}}</strong> at <strong>{{companyName}}</strong>
-        has been <strong>canceled</strong>.
+        <strong>{{jobTitle}}</strong>
+        at
+        <strong>{{companyName}}</strong>
+        has been
+        <strong>canceled</strong>.
       </p>
 
       <p>{{message}}</p>
+    {{/ifEquals}}
+
+    {{#ifEquals type "updated"}}
+      <p>⚠️ Your interview details have been <strong>updated</strong>.</p>
+
+      <p><strong>Job:</strong> {{jobTitle}}</p>
+      <p><strong>Company:</strong> {{companyName}}</p>
+      <p><strong>Date:</strong> {{interviewDate}}</p>
+      <p>
+        <strong>Time:</strong>
+        {{interviewTime.start}}
+        -
+        {{interviewTime.end}}
+      </p>
+
+      {{#ifEquals medium "Online"}}
+        <p>
+          <strong>Meeting Link:</strong>
+          <a href="{{meetingLink}}">{{meetingLink}}</a>
+        </p>
+      {{else}}
+        <p><strong>Location:</strong> {{location}}</p>
+      {{/ifEquals}}
+
+      {{#if instructions}}
+        <p><strong>Instructions:</strong> {{instructions}}</p>
+      {{/if}}
     {{/ifEquals}}
 
     <p>Regards,<br /><strong>JobPortal Team</strong></p>

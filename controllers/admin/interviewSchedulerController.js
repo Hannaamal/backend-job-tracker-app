@@ -133,118 +133,71 @@ export const getInterviewByJob = async (req, res) => {
 /**UPDATE INTERVIEW*/
 
 export const updateInterviewSchedule = async (req, res) => {
+  console.log("🚀 UPDATE INTERVIEW API HIT");
+
   try {
-    const interview = await Interview.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
+    const interview = await Interview.findById(req.params.id)
+      .populate("job", "title")
+      .populate("company", "name");
 
     if (!interview) {
       return res.status(404).json({ message: "Interview not found" });
     }
 
-    res.json({
-      message: "Interview updated successfully",
-      interview,
-    });
+    // 1️⃣ Update interview
+    Object.assign(interview, req.body); // merge updated fields
+    await interview.save();
+    console.log("✅ Interview updated:", interview._id);
+
+    // 2️⃣ Respond immediately
+    res.json({ message: "Interview updated successfully", interview });
+
+    // 3️⃣ Fetch all applications for this job
+    const applications = await JobApplication.find({ interview: interview._id })
+      .populate("applicant", "name email")
+      .populate({ path: "job", populate: { path: "company", select: "name" } });
+
+    // 4️⃣ Send update emails asynchronously
+    if (applications.length > 0) {
+      setImmediate(async () => {
+        for (const app of applications) {
+          try {
+            await sendInterviewEmail(app.applicant.email, {
+              type: "updated", // make sure this matches the template
+              applicantName: app.applicant.name,
+              jobTitle: app.job.title,
+              companyName: app.job.company.name,
+              interviewDate: interview.date.toDateString(),
+              interviewTime: {
+                start: interview.timeRange?.start,
+                end: interview.timeRange?.end,
+              },
+              medium: interview.medium,
+              meetingLink: interview.meetingLink,
+              location: interview.location,
+              instructions: interview.instructions,
+              message:
+                "The interview details have been updated. Please check the new schedule.",
+            });
+
+            console.log("📧 Update email sent to", app.applicant.email);
+          } catch (err) {
+            console.error(
+              "❌ Failed to send update email to",
+              app.applicant.email,
+              err.message
+            );
+          }
+        }
+      });
+    } else {
+      console.log("⚠️ No applications found to send update emails");
+    }
   } catch (error) {
+    console.error("🔥 Update error:", error.message);
     res.status(500).json({ message: error.message });
   }
 };
-
-/**
- * CANCEL INTERVIEW
- * DELETE /interviews/:id
- */
-
-
-// export const cancelInterviewSchedule = async (req, res) => {
-//   const interview = await Interview.findById(req.params.id);
-
-//   const applications = await JobApplication.find({
-//     interview: interview._id,
-//   }).populate("applicant job");
-
-//   for (const app of applications) {
-//     await sendInterviewEmail(app.applicant.email, {
-//       type: "canceled",
-//       applicantName: app.applicant.name,
-//       jobTitle: app.job.title,
-//       companyName: app.job.company.name,
-//       message: "Interview canceled",
-//     });
-//   }
-
-//   await JobApplication.updateMany(
-//     { interview: interview._id },
-//     { status: "applied", interview: null }
-//   );
-
-//   await interview.deleteOne();
-// };
-
-
-
-
-// export const cancelInterviewSchedule = async (req, res) => {
-//   console.log("🚨 CANCEL INTERVIEW API HIT");
-
-//   try {
-//     const interview = await Interview.findById(req.params.id);
-//     if (!interview) {
-//       return res.status(404).json({ message: "Interview not found" });
-//     }
-
-//     // 1️⃣ Fetch applications
-//     const applications = await JobApplication.find({
-//       interview: interview._id,
-//     })
-//       .populate("applicant")
-//       .populate({
-//         path: "job",
-//         populate: { path: "company", select: "name" },
-//       });
-
-//     // 2️⃣ Revert applications
-//     await JobApplication.updateMany(
-//       { interview: interview._id },
-//       { status: "applied", interview: null }
-//     );
-
-//     // 3️⃣ Delete interview
-//     await interview.deleteOne();
-
-//     // ✅ 4️⃣ RESPOND IMMEDIATELY
-//     res.json({
-//       message: "Interview cancelled successfully",
-//     });
-
-//     // 🔥 5️⃣ SEND EMAILS IN BACKGROUND (NO await)
-//     setImmediate(async () => {
-//       for (const app of applications) {
-//         try {
-//           await sendInterviewEmail(app.applicant.email, {
-//             type: "canceled",
-//             applicantName: app.applicant.name,
-//             jobTitle: app.job.title,
-//             companyName: app.job.company.name,
-//             message:
-//               "The interview has been canceled. We apologize for the inconvenience.",
-//           });
-
-//           console.log("📧 Cancel email sent to", app.applicant.email);
-//         } catch (err) {
-//           console.error("❌ Email failed:", err.message);
-//         }
-//       }
-//     });
-//   } catch (error) {
-//     console.error("🔥 Cancel error:", error);
-//     res.status(500).json({ message: error.message });
-//   }
-// };
-
 
 
 export const cancelInterviewSchedule = async (req, res) => {
@@ -294,27 +247,22 @@ export const cancelInterviewSchedule = async (req, res) => {
             });
             console.log("📧 Cancel email sent to", app.applicant.email);
           } catch (err) {
-            console.error("❌ Failed to send email to", app.applicant.email, err.message);
+            console.error(
+              "❌ Failed to send email to",
+              app.applicant.email,
+              err.message
+            );
           }
         }
       });
     } else {
       console.log("⚠️ No applications found to send cancel emails");
     }
-
   } catch (error) {
     console.error("🔥 Cancel error:", error.message);
     res.status(500).json({ message: error.message });
   }
 };
-
-
-
-
-
-
-
-
 
 /**
  * GET interview by id
