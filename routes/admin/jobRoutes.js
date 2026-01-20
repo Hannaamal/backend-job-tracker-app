@@ -8,7 +8,7 @@ import {
   updateJob,
   deleteJob,
 } from "../../controllers/jobController.js";
-import { getJobs } from "../../controllers/filterController.js";
+import { getJobs, getSearchSuggestions } from "../../controllers/filterController.js";
 import { check } from "express-validator";
 
 const jobRouter = express.Router();
@@ -85,6 +85,7 @@ const updateJobValidator = [
 // Public
  jobRouter.get("/", getAllJobs);
  jobRouter.get("/filter",getJobs)
+ jobRouter.get("/search-suggestions", getSearchSuggestions)
  jobRouter.get("/company/:companyId", getJobsByCompany);
  jobRouter.get("/:id", getJobById);
 
