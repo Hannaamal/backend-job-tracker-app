@@ -31,4 +31,8 @@ interviewRouter.get("/job/:jobId",userAuthCheck,getInterviewByJob);
 
 interviewRouter.get("/interviews/:id",userAuthCheck,getInterviewById);
 
+
+
+
+
 export default interviewRouter;

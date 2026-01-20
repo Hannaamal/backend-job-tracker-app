@@ -1,5 +1,5 @@
 import JobApplication from "../../models/jobApplication.js";
-import Interview from "../../models/interviewScheduler.js";
+
 
 /* ===============================
    GET ALL APPLICATIONS (ADMIN)
@@ -58,3 +58,28 @@ export const updateApplicationStatus = async (req, res) => {
     });
   }
 };
+
+
+export const updateApplicationsStatusByJob = async (req, res) => {
+  try {
+    if (req.userData.userRole !== "admin") {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    const { jobId } = req.params;
+    const { status } = req.body;
+
+    const result = await JobApplication.updateMany(
+      { job: jobId, is_deleted: false },
+      { $set: { status } }
+    );
+
+    res.status(200).json({
+      message: "Applications updated successfully",
+      modifiedCount: result.modifiedCount,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to update applications" });
+  }
+};
+
