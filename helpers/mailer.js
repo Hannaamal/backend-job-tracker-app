@@ -61,11 +61,13 @@ export const sendInterviewEmail = async (to, context) => {
   await transport.sendMail({
     from: `"JobPortal Team" <${fromEmail}>`,
     to,
-    subject: `🎯 Interview Scheduled - ${context.jobTitle}`,
+    subject:
+      context.type === "canceled"
+        ? `⚠️ Interview Canceled - ${context.jobTitle}`
+        : `🎯 Interview Scheduled - ${context.jobTitle}`,
     template: "interview_notification",
     context,
   });
 
-  console.log(`📧 Interview scheduled email sent to ${to}`);
+  console.log(`📧 Interview ${context.type} email sent to ${to}`);
 };
-

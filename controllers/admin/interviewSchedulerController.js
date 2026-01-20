@@ -3,13 +3,12 @@ import JobApplication from "../../models/jobApplication.js";
 import Job from "../../models/jobs.js";
 import { sendInterviewEmail } from "../../helpers/mailer.js";
 
-
 /**
  * CREATE INTERVIEW
  * POST /jobs/:jobId/interviews
  */
 export const scheduleInterview = async (req, res) => {
-   console.log("🚀 scheduleInterview API HIT");
+  console.log("🚀 scheduleInterview API HIT");
   console.log("📦 req.params:", req.params);
   console.log("📦 req.body:", req.body);
   try {
@@ -27,8 +26,8 @@ export const scheduleInterview = async (req, res) => {
     } = req.body;
 
     // 🔎 Validate Job
-    const job = await Job.findById(jobId);
-    
+    const job = await Job.findById(jobId).populate("company", "name");
+
     if (!job) {
       return res.status(404).json({ message: "Job not found" });
     }
@@ -79,33 +78,34 @@ export const scheduleInterview = async (req, res) => {
     console.log("📄 Applications found:", applications.length);
 
     await Promise.allSettled(
-  applications.map(async (app) => {
-    app.status = "interview";
-    app.interview = interview._id;
-    await app.save();
+      applications.map(async (app) => {
+        app.status = "interview";
+        app.interview = interview._id;
+        await app.save();
 
-    return sendInterviewEmail(app.applicant.email, {
-      applicantName: app.applicant.name,
-      jobTitle: job.title,
-      companyName: job.company.name,
-      interviewDate: interview.date,
-      interviewTime: interview.timeRange,
-      medium: interview.medium,
-      meetingLink: interview.meetingLink,
-      location: interview.location,
-      instructions: interview.instructions,
-    });
-  })
-);
-
-
+        await sendInterviewEmail(app.applicant.email, {
+          type: "scheduled",
+          applicantName: app.applicant.name,
+          jobTitle: job.title,
+          companyName: job.company.name, // ensure company is populated
+          interviewDate: interview.date.toDateString(), // optional formatting
+          interviewTime: {
+            start: interview.timeRange.start,
+            end: interview.timeRange.end,
+          },
+          medium: interview.medium,
+          meetingLink: interview.meetingLink,
+          location: interview.location,
+          instructions: interview.instructions,
+        });
+      })
+    );
     res.status(201).json({
       message: "Interview scheduled successfully",
       interview,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
-     throw error;
   }
 };
 
@@ -157,47 +157,164 @@ export const updateInterviewSchedule = async (req, res) => {
  * CANCEL INTERVIEW
  * DELETE /interviews/:id
  */
+
+
+// export const cancelInterviewSchedule = async (req, res) => {
+//   const interview = await Interview.findById(req.params.id);
+
+//   const applications = await JobApplication.find({
+//     interview: interview._id,
+//   }).populate("applicant job");
+
+//   for (const app of applications) {
+//     await sendInterviewEmail(app.applicant.email, {
+//       type: "canceled",
+//       applicantName: app.applicant.name,
+//       jobTitle: app.job.title,
+//       companyName: app.job.company.name,
+//       message: "Interview canceled",
+//     });
+//   }
+
+//   await JobApplication.updateMany(
+//     { interview: interview._id },
+//     { status: "applied", interview: null }
+//   );
+
+//   await interview.deleteOne();
+// };
+
+
+
+
+// export const cancelInterviewSchedule = async (req, res) => {
+//   console.log("🚨 CANCEL INTERVIEW API HIT");
+
+//   try {
+//     const interview = await Interview.findById(req.params.id);
+//     if (!interview) {
+//       return res.status(404).json({ message: "Interview not found" });
+//     }
+
+//     // 1️⃣ Fetch applications
+//     const applications = await JobApplication.find({
+//       interview: interview._id,
+//     })
+//       .populate("applicant")
+//       .populate({
+//         path: "job",
+//         populate: { path: "company", select: "name" },
+//       });
+
+//     // 2️⃣ Revert applications
+//     await JobApplication.updateMany(
+//       { interview: interview._id },
+//       { status: "applied", interview: null }
+//     );
+
+//     // 3️⃣ Delete interview
+//     await interview.deleteOne();
+
+//     // ✅ 4️⃣ RESPOND IMMEDIATELY
+//     res.json({
+//       message: "Interview cancelled successfully",
+//     });
+
+//     // 🔥 5️⃣ SEND EMAILS IN BACKGROUND (NO await)
+//     setImmediate(async () => {
+//       for (const app of applications) {
+//         try {
+//           await sendInterviewEmail(app.applicant.email, {
+//             type: "canceled",
+//             applicantName: app.applicant.name,
+//             jobTitle: app.job.title,
+//             companyName: app.job.company.name,
+//             message:
+//               "The interview has been canceled. We apologize for the inconvenience.",
+//           });
+
+//           console.log("📧 Cancel email sent to", app.applicant.email);
+//         } catch (err) {
+//           console.error("❌ Email failed:", err.message);
+//         }
+//       }
+//     });
+//   } catch (error) {
+//     console.error("🔥 Cancel error:", error);
+//     res.status(500).json({ message: error.message });
+//   }
+// };
+
+
+
 export const cancelInterviewSchedule = async (req, res) => {
+  console.log("🚨 CANCEL INTERVIEW API HIT");
+
   try {
     const interview = await Interview.findById(req.params.id);
     if (!interview) {
+      console.log("❌ Interview not found");
       return res.status(404).json({ message: "Interview not found" });
     }
 
-    // 🔁 Revert applications
+    // 1️⃣ Fetch applications
+    const applications = await JobApplication.find({ interview: interview._id })
+      .populate("applicant")
+      .populate({ path: "job", populate: { path: "company", select: "name" } });
+
+    // 2️⃣ Revert applications
     await JobApplication.updateMany(
       { interview: interview._id },
-      {
-        status: "applied",
-        interview: null,
-      }
+      { status: "applied", interview: null }
     );
-   const applications = await JobApplication.find({
-      interview: interview._id,
-    }).populate("applicant job");
 
-    for (const app of applications) {
-      app.status = "applied";
-      app.interview = null;
-      await app.save();
-
-      await sendInterviewEmail(app.applicant.email, {
-        type: "canceled",
-        applicantName: app.applicant.name,
-        jobTitle: app.job.title,
-        companyName: app.job.company.name,
-        message: "The interview has been canceled. We apologize for the inconvenience.",
-      });
+    // 3️⃣ Delete interview
+    try {
+      await interview.deleteOne();
+      console.log("🗑️ Interview deleted");
+    } catch (err) {
+      console.error("❌ Failed to delete interview:", err.message);
     }
-    await interview.deleteOne();
 
-    res.json({
-      message: "Interview cancelled and applicants reverted to applied",
-    });
+    // 4️⃣ Respond immediately
+    res.json({ message: "Interview cancelled successfully" });
+
+    // 5️⃣ Send emails asynchronously
+    if (applications.length > 0) {
+      setImmediate(async () => {
+        for (const app of applications) {
+          try {
+            await sendInterviewEmail(app.applicant.email, {
+              type: "canceled",
+              applicantName: app.applicant.name,
+              jobTitle: app.job.title,
+              companyName: app.job.company.name,
+              message:
+                "The interview has been canceled. We apologize for the inconvenience.",
+            });
+            console.log("📧 Cancel email sent to", app.applicant.email);
+          } catch (err) {
+            console.error("❌ Failed to send email to", app.applicant.email, err.message);
+          }
+        }
+      });
+    } else {
+      console.log("⚠️ No applications found to send cancel emails");
+    }
+
   } catch (error) {
+    console.error("🔥 Cancel error:", error.message);
     res.status(500).json({ message: error.message });
   }
 };
+
+
+
+
+
+
+
+
 
 /**
  * GET interview by id
