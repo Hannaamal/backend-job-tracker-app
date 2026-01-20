@@ -5,15 +5,15 @@ import HttpError from "../helpers/httpError.js";
 const userAuthCheck = async (req, res, next) => {
   try {
     const token = req.cookies?.auth_token;
-    console.log("COOKIE RECEIVED:", token);
+    // console.log("COOKIE RECEIVED:", token);
 
     if (!token) {
       return next(new HttpError("Unauthorized", 401));
     }
 
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-    console.log("RAW TOKEN:", token);
-    console.log("DECODED:", decodedToken);
+    // console.log("RAW TOKEN:", token);
+    // console.log("DECODED:", decodedToken);
 
     if (!decodedToken?.id || !decodedToken?.role) {
       return next(new HttpError("Invalid token", 401));

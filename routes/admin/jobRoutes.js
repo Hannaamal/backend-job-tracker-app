@@ -29,9 +29,11 @@ const createJobValidator = [
     .withMessage("Job description must be at least 20 characters"),
 
   check("location")
-    .trim()
-    .notEmpty()
-    .withMessage("Job location is required"),
+  .if((value, { req }) => !req.body.isRemote)
+  .trim()
+  .notEmpty()
+  .withMessage("Location is required for onsite jobs"),
+
 
   check("jobType")
     .trim()
@@ -61,10 +63,11 @@ const updateJobValidator = [
     .withMessage("Job description must be at least 20 characters"),
 
   check("location")
-    .optional()
-    .trim()
-    .notEmpty()
-    .withMessage("Location cannot be empty"),
+  .if((value, { req }) => !req.body.isRemote)
+  .trim()
+  .notEmpty()
+  .withMessage("Location is required for onsite jobs"),
+
 
   check("jobType")
     .optional()

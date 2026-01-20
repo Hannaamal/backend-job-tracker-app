@@ -38,22 +38,18 @@ export const createJob = async (req, res, next) => {
     if (!companyDoc)
       return res.status(404).json({ message: "Company not found" });
 
-    // Check for duplicate active job
-    const existingJob = await Job.findOne({
-      title,
-      company,
-      location,
-      isActive: true,
-    });
-    if (existingJob) {
-      return res.status(409).json({ message: "Active job already exists" });
-    }
+    const isRemote = req.body.isRemote === true || req.body.isRemote === "true";
+
+    const normalizedIsRemote =
+  isRemote === true || isRemote === "true";
+
 
     // Create the job
     const job = await Job.create({
       title,
       description,
-      location,
+       isRemote: normalizedIsRemote,
+      location: normalizedIsRemote ? "Remote" : location,
       jobType,
       experienceLevel,
       salaryRange,
@@ -292,12 +288,28 @@ export const updateJob = async (req, res, next) => {
         errors: errors.array(),
       });
     }
+
+    
+    // 🔥 Normalize isRemote (same as create)
+    const isRemote =
+      req.body.isRemote === true || req.body.isRemote === "true";
+
+    // 🔥 Enforce location logic
+    if (isRemote) {
+      req.body.location = "Remote";
+    }
+    
+    
     const job = await Job.findByIdAndUpdate(
       req.params.id,
-      { $set: req.body },
+      {
+        $set: {
+          ...req.body,
+          isRemote, // always overwrite with normalized value
+        },
+      },
       { new: true, runValidators: true }
     );
-    console.log("🔥 UPDATE CONTROLLER HIT");
 
     if (!job) {
       return res.status(404).json({ message: "Job not found" });
