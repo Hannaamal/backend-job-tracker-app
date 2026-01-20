@@ -2,11 +2,16 @@ import nodemailer from 'nodemailer';
 import hbs from 'nodemailer-express-handlebars';
 import path from 'path';
 import dotenv from 'dotenv';
+import Handlebars from "handlebars";
 
 dotenv.config();
 
 const fromEmail = 'info@limenzydev.com';
 
+/* ✅ REGISTER HELPER */
+Handlebars.registerHelper("ifEquals", function (a, b, options) {
+  return a === b ? options.fn(this) : options.inverse(this);
+});
 
 // Create transporter
 const transport = nodemailer.createTransport({
@@ -22,15 +27,20 @@ const transport = nodemailer.createTransport({
 });
 
 // Handlebars setup
-transport.use('compile', hbs({
-  viewEngine: { partialsDir: path.resolve('./views'), defaultLayout: false },
-  viewPath: path.resolve('./views'),
-  extName: '.hbs',
-}));
-
+transport.use(
+  "compile",
+  hbs({
+    viewEngine: {
+      handlebars: Handlebars,   // 🔥 REQUIRED
+      partialsDir: path.resolve("./views"),
+      defaultLayout: false,
+    },
+    viewPath: path.resolve("./views"),
+    extName: ".hbs",
+  })
+);
 // Function to send Job Alert email
 export const sendJobAlertEmail = async (to, context) => {
-    console.log(to,context)
   try {
     const info = await transport.sendMail({
       from: `"JobPortal Team" <${fromEmail}>`,
@@ -45,3 +55,17 @@ export const sendJobAlertEmail = async (to, context) => {
  
   }
 };
+
+/* ✅ SEND INTERVIEW EMAIL */
+export const sendInterviewEmail = async (to, context) => {
+  await transport.sendMail({
+    from: `"JobPortal Team" <${fromEmail}>`,
+    to,
+    subject: `🎯 Interview Scheduled - ${context.jobTitle}`,
+    template: "interview_notification",
+    context,
+  });
+
+  console.log(`📧 Interview scheduled email sent to ${to}`);
+};
+
