@@ -61,7 +61,6 @@ mongoose
 app.use(
   cors({
     origin: (origin, callback) => {
-      // console.log("🌐 Incoming origin:", origin);
 
       // Allow server-to-server, Postman, mobile apps
       if (!origin) return callback(null, true);

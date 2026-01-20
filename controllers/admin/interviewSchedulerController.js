@@ -8,9 +8,6 @@ import { sendInterviewEmail } from "../../helpers/mailer.js";
  * POST /jobs/:jobId/interviews
  */
 export const scheduleInterview = async (req, res) => {
-  console.log("🚀 scheduleInterview API HIT");
-  console.log("📦 req.params:", req.params);
-  console.log("📦 req.body:", req.body);
   try {
     const { jobId } = req.params;
 
@@ -74,9 +71,7 @@ export const scheduleInterview = async (req, res) => {
     const applications = await JobApplication.find({
       job: job._id,
     }).populate("applicant", "name email");
-    console.log("🧾 Job found:", job?._id, job?.title);
-    console.log("📄 Applications found:", applications.length);
-
+   
     await Promise.allSettled(
       applications.map(async (app) => {
         app.status = "interview";
@@ -133,7 +128,7 @@ export const getInterviewByJob = async (req, res) => {
 /**UPDATE INTERVIEW*/
 
 export const updateInterviewSchedule = async (req, res) => {
-  console.log("🚀 UPDATE INTERVIEW API HIT");
+  
 
   try {
     const interview = await Interview.findById(req.params.id)
@@ -147,7 +142,7 @@ export const updateInterviewSchedule = async (req, res) => {
     // 1️⃣ Update interview
     Object.assign(interview, req.body); // merge updated fields
     await interview.save();
-    console.log("✅ Interview updated:", interview._id);
+   
 
     // 2️⃣ Respond immediately
     res.json({ message: "Interview updated successfully", interview });
@@ -179,34 +174,23 @@ export const updateInterviewSchedule = async (req, res) => {
               message:
                 "The interview details have been updated. Please check the new schedule.",
             });
-
-            console.log("📧 Update email sent to", app.applicant.email);
           } catch (err) {
-            console.error(
-              "❌ Failed to send update email to",
-              app.applicant.email,
-              err.message
-            );
           }
         }
       });
     } else {
-      console.log("⚠️ No applications found to send update emails");
     }
   } catch (error) {
-    console.error("🔥 Update error:", error.message);
     res.status(500).json({ message: error.message });
   }
 };
 
 
 export const cancelInterviewSchedule = async (req, res) => {
-  console.log("🚨 CANCEL INTERVIEW API HIT");
 
   try {
     const interview = await Interview.findById(req.params.id);
     if (!interview) {
-      console.log("❌ Interview not found");
       return res.status(404).json({ message: "Interview not found" });
     }
 
@@ -224,9 +208,9 @@ export const cancelInterviewSchedule = async (req, res) => {
     // 3️⃣ Delete interview
     try {
       await interview.deleteOne();
-      console.log("🗑️ Interview deleted");
+      
     } catch (err) {
-      console.error("❌ Failed to delete interview:", err.message);
+      
     }
 
     // 4️⃣ Respond immediately
@@ -245,21 +229,14 @@ export const cancelInterviewSchedule = async (req, res) => {
               message:
                 "The interview has been canceled. We apologize for the inconvenience.",
             });
-            console.log("📧 Cancel email sent to", app.applicant.email);
+            
           } catch (err) {
-            console.error(
-              "❌ Failed to send email to",
-              app.applicant.email,
-              err.message
-            );
           }
         }
       });
     } else {
-      console.log("⚠️ No applications found to send cancel emails");
     }
   } catch (error) {
-    console.error("🔥 Cancel error:", error.message);
     res.status(500).json({ message: error.message });
   }
 };
